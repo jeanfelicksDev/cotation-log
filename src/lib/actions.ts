@@ -254,7 +254,7 @@ export async function updateQuotation(id: string, data: any) {
 
     // Delete existing related items and containers, then recreate
     await prisma.quotationItem.deleteMany({ where: { quotationId: id } });
-    await prisma.containerType.deleteMany({ where: { quotationId: id } });
+    await prisma.quotationContainer.deleteMany({ where: { quotationId: id } });
 
     const quotation = await prisma.quotation.update({
       where: { id },

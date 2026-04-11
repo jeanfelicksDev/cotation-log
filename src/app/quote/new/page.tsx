@@ -68,11 +68,11 @@ function QuoteForm() {
   const loadQuotation = async (id: string) => {
     const q = await getQuotationById(id);
     if (q) {
-      setClient(q.clientName);
-      setDirection(q.direction as any);
-      setOrigin(q.origin);
-      setDestination(q.destination);
-      setCommodity(q.commodity);
+      setClient(q.clientName || "");
+      setDirection((q.direction as any) || "import");
+      setOrigin(q.origin || "");
+      setDestination(q.destination || "");
+      setCommodity(q.commodity || "");
       setMode("sea");
       setBaseCosts(q.items.map((i: any) => ({
         id: i.id,
