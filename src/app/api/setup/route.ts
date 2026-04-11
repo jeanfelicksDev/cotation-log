@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { Pool } from "pg";
 
 export async function GET() {
-  const connectionString = process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_PRISMA_URL;
+  const vars = {
+    POSTGRES_URL: !!process.env.POSTGRES_URL,
+    POSTGRES_PRISMA_URL: !!process.env.POSTGRES_PRISMA_URL,
+    POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING,
+    DATABASE_URL: !!process.env.DATABASE_URL,
+  };
+
+  const connectionString = process.env.POSTGRES_URL_NON_POOLING 
+    || process.env.POSTGRES_PRISMA_URL 
+    || process.env.POSTGRES_URL
+    || process.env.DATABASE_URL;
   
   if (!connectionString) {
-    return NextResponse.json({ error: "No connection string" }, { status: 500 });
+    return NextResponse.json({ error: "No connection string", available_vars: vars }, { status: 500 });
   }
 
   const pool = new Pool({ connectionString });
