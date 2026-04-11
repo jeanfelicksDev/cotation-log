@@ -71,14 +71,15 @@ export default function TrackingPage() {
 
   const handleDownload = (offer: any) => {
     generateQuotationPDF({
-      client: offer.clientName,
-      direction: offer.direction,
-      origin: offer.origin,
-      destination: offer.destination,
-      commodity: offer.commodity,
-      containers: offer.containers,
-      baseCosts: offer.items,
-      marge: offer.margin || 15
+      client: offer.clientName || "Client",
+      direction: offer.direction || "import",
+      origin: offer.origin || "-",
+      destination: offer.destination || "-",
+      commodity: offer.commodity || "-",
+      mode: offer.mode || "sea",
+      containers: offer.containers || [],
+      items: offer.items || [],
+      totalFinal: offer.totalFinal || 0
     });
   };
 
