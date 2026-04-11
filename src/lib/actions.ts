@@ -338,6 +338,7 @@ export async function getFreightRates() {
 export async function createFreightRate(data: { carrier: string; origin: string; destination: string; containerType: string; commodity: string; amount: number; currency: string; validFrom: Date; validTo: Date }) {
   try {
     const rate = await prisma.freightRate.create({ data });
+    revalidatePath("/tariffs");
     return rate;
   } catch (error) {
     console.error("Error creating freight rate:", error);
@@ -347,7 +348,9 @@ export async function createFreightRate(data: { carrier: string; origin: string;
 
 export async function updateFreightRate(id: string, data: any) {
   try {
-    return await prisma.freightRate.update({ where: { id }, data });
+    const rate = await prisma.freightRate.update({ where: { id }, data });
+    revalidatePath("/tariffs");
+    return rate;
   } catch (error) {
     console.error("Error updating freight rate:", error);
     throw error;
@@ -357,6 +360,7 @@ export async function updateFreightRate(id: string, data: any) {
 export async function deleteFreightRate(id: string) {
   try {
     await prisma.freightRate.delete({ where: { id } });
+    revalidatePath("/tariffs");
     return true;
   } catch (error) {
     console.error("Error deleting freight rate:", error);

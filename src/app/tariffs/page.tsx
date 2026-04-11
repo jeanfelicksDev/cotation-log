@@ -147,7 +147,10 @@ export default function TariffsPage() {
         setRates([created, ...rates]);
       }
       setActiveModal(null);
-    } catch { alert("Erreur lors de l'opération."); }
+    } catch (err: any) { 
+      console.error(err);
+      alert("Erreur lors de l'opération: " + (err.message || String(err))); 
+    }
   }
 
   async function handleDeleteForwarder(id: string) {
