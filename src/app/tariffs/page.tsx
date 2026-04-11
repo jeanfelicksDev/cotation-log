@@ -94,9 +94,25 @@ export default function TariffsPage() {
 
   // Load active tab from localStorage
   useEffect(() => {
-    // Both are loaded to ensure smooth tab switching
-    await Promise.all([initMaison(), initForwarder()]);
-  };
+    const savedTab = localStorage.getItem("activeTariffTab") as TabType;
+    if (savedTab && (savedTab === "maison" || savedTab === "forwarder")) {
+      setActiveTab(savedTab);
+    }
+    setIsLoaded(true);
+    
+    // Initial fetch
+    const fetchAll = async () => {
+      await Promise.all([initMaison(), initForwarder()]);
+    };
+    fetchAll();
+  }, []);
+
+  // Save active tab to localStorage
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("activeTariffTab", activeTab);
+    }
+  }, [activeTab, isLoaded]);
 
   const initMaison = async () => {
     setMaisonLoading(true);
