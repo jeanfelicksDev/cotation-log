@@ -73,3 +73,17 @@ model Tariff {
   currency    String   @default("EUR")
   type        String
 }
+
+model FreightRate {
+  id            String   @id @default(cuid())
+  carrier       String   // Compagnie maritime (ex: CMA CGM)
+  origin        String   // Port de départ
+  destination   String   // Port d'arrivée
+  containerType String   // Type de conteneur (ex: 20GP, 40HC)
+  commodity     String   // Type de marchandise
+  amount        Float    // Tarif d'achat
+  currency      String   @default("EUR")
+  validFrom     DateTime // Début validité
+  validTo       DateTime // Fin validité
+  createdAt     DateTime @default(now())
+}

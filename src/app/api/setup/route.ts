@@ -81,6 +81,21 @@ export async function GET() {
         "type" TEXT NOT NULL,
         CONSTRAINT "Tariff_pkey" PRIMARY KEY ("id")
       );
+
+      CREATE TABLE IF NOT EXISTS "FreightRate" (
+        "id" TEXT NOT NULL,
+        "carrier" TEXT NOT NULL,
+        "origin" TEXT NOT NULL,
+        "destination" TEXT NOT NULL,
+        "containerType" TEXT NOT NULL,
+        "commodity" TEXT NOT NULL,
+        "amount" DOUBLE PRECISION NOT NULL,
+        "currency" TEXT NOT NULL DEFAULT 'EUR',
+        "validFrom" TIMESTAMP(3) NOT NULL,
+        "validTo" TIMESTAMP(3) NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "FreightRate_pkey" PRIMARY KEY ("id")
+      );
     `);
 
     // Add foreign keys separately (ignore if they already exist)

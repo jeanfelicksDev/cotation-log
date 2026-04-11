@@ -321,3 +321,67 @@ export async function deleteQuotation(id: string) {
     throw error;
   }
 }
+
+// --- FREIGHT RATES ACTIONS ---
+
+export async function getFreightRates() {
+  try {
+    return await prisma.freightRate.findMany({
+      orderBy: { createdAt: "desc" }
+    });
+  } catch (error) {
+    console.error("Error fetching freight rates:", error);
+    return [];
+  }
+}
+
+export async function createFreightRate(data: { carrier: string; origin: string; destination: string; containerType: string; commodity: string; amount: number; currency: string; validFrom: Date; validTo: Date }) {
+  try {
+    const rate = await prisma.freightRate.create({ data });
+    return rate;
+  } catch (error) {
+    console.error("Error creating freight rate:", error);
+    throw error;
+  }
+}
+
+export async function updateFreightRate(id: string, data: any) {
+  try {
+    return await prisma.freightRate.update({ where: { id }, data });
+  } catch (error) {
+    console.error("Error updating freight rate:", error);
+    throw error;
+  }
+}
+
+export async function deleteFreightRate(id: string) {
+  try {
+    await prisma.freightRate.delete({ where: { id } });
+    return true;
+  } catch (error) {
+    console.error("Error deleting freight rate:", error);
+    throw error;
+  }
+}
+
+export async function findMatchingFreightRate(origin: string, destination: string, containerType: string, commodity: string) {
+  try {
+    const now = new Date();
+    // We look for a rate mapping the requested fields exactly and that is currently valid
+    const rate = await prisma.freightRate.findFirst({
+      where: {
+        origin,
+        destination,
+        containerType,
+        commodity,
+        validFrom: { lte: now },
+        validTo: { gte: now }
+      },
+      orderBy: { amount: "asc" } // Get the cheapest if there are multiple
+    });
+    return rate;
+  } catch (error) {
+    console.error("Error finding matching freight rate:", error);
+    return null;
+  }
+}

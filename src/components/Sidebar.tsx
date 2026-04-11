@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Globe
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
@@ -21,6 +22,7 @@ const navItems = [
   { name: "Nouvelle Cotation", href: "/quote/new", icon: FilePlus,  color: "#f59e0b" },
   { name: "Suivi des Offres",  href: "/tracking",  icon: History,   color: "#e879f9" },
   { name: "Grilles Tarifaires",href: "/tariffs",   icon: Layers,    color: "#fb7185" },
+  { name: "Tarifs Négociés",   href: "/freight-rates", icon: Globe, color: "#38bdf8" },
 ];
 
 export default function Sidebar() {

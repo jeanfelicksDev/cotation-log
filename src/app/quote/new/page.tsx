@@ -14,11 +14,12 @@ import {
   MapPin,
   Box,
   Package,
-  Minus
+  Minus,
+  Globe
 } from "lucide-react";
 import { clsx } from "clsx";
 import { generateQuotationPDF } from "@/lib/export-pdf";
-import { getParameters, saveQuotation, getQuotationById, updateQuotation } from "@/lib/actions";
+import { getParameters, saveQuotation, getQuotationById, updateQuotation, findMatchingFreightRate } from "@/lib/actions";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type CostLine = {
@@ -56,8 +57,20 @@ function QuoteForm() {
   const [marge, setMarge] = useState(15); // Percentage
   const [dbParams, setDbParams] = useState<Record<string, Parameter[]>>({});
   const [saving, setSaving] = useState(false);
+  const [suggestedRate, setSuggestedRate] = useState<any | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    if (origin && destination && commodity && containers.length > 0) {
+      const fetchRate = async () => {
+        const rate = await findMatchingFreightRate(origin, destination, containers[0].type, commodity);
+        setSuggestedRate(rate);
+      };
+      fetchRate();
+    } else {
+      setSuggestedRate(null);
+    }
+  }, [origin, destination, commodity, containers]);
   useEffect(() => {
     loadParams();
     if (editId) {
@@ -121,6 +134,21 @@ function QuoteForm() {
       marginRate: 15
     };
     setBaseCosts([...baseCosts, newLine]);
+  };
+
+  const applyFreightRate = (rate: any) => {
+    const newLine: CostLine = {
+      id: Math.random().toString(36).substr(2, 9),
+      description: `Fret Maritime - ${rate.carrier}`,
+      amount: rate.amount * (1 + 15 / 100), // Default 15% margin
+      currency: rate.currency,
+      type: "fret",
+      isForwarding: true,
+      buyAmount: rate.amount,
+      marginRate: 15
+    };
+    setBaseCosts([...baseCosts, newLine]);
+    setSuggestedRate(null); // Clear after applying
   };
 
   const removeCostLine = (id: string) => {
@@ -409,7 +437,32 @@ function QuoteForm() {
                 </div>
 
                 <div className="costs-list">
-                  {baseCosts.length === 0 && (
+                  <AnimatePresence>
+                    {suggestedRate && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="suggestion-banner"
+                      >
+                        <div className="suggestion-icon">
+                          <Globe size={20} color="#38bdf8" />
+                        </div>
+                        <div className="suggestion-text">
+                          <p className="title">Taux négocié trouvé !</p>
+                          <p className="desc">Un tarif spécial avec <strong>{suggestedRate.carrier}</strong> est disponible pour ce trajet.</p>
+                        </div>
+                        <div className="suggestion-price">
+                          {suggestedRate.amount.toLocaleString()} {suggestedRate.currency}
+                        </div>
+                        <button className="btn-apply-suggestion" onClick={() => applyFreightRate(suggestedRate)}>
+                          Appliquer
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {baseCosts.length === 0 && !suggestedRate && (
                     <div className="empty-state">
                       <AlertCircle size={32} />
                       <p>Aucun coût ajouté. Commencez par ajouter le fret ou les frais locaux.</p>
@@ -1192,6 +1245,79 @@ function QuoteForm() {
         }
 
         .rotate-180 { transform: rotate(180deg); }
+
+        /* Suggestion Banner */
+        .suggestion-banner {
+          background: linear-gradient(90deg, rgba(56, 189, 248, 0.1), rgba(16, 185, 129, 0.1));
+          border: 1px solid rgba(56, 189, 248, 0.3);
+          border-radius: 16px;
+          padding: 16px 20px;
+          margin-bottom: 24px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .suggestion-banner::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          background: #38bdf8;
+        }
+
+        .suggestion-icon {
+          width: 40px;
+          height: 40px;
+          background: rgba(56, 189, 248, 0.1);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .suggestion-text {
+          flex: 1;
+        }
+
+        .suggestion-text .title {
+          font-weight: 700;
+          font-size: 14px;
+          color: #38bdf8;
+          margin-bottom: 2px;
+        }
+
+        .suggestion-text .desc {
+          font-size: 13px;
+          color: var(--text-dim);
+        }
+
+        .suggestion-price {
+          font-size: 18px;
+          font-weight: 800;
+          color: #10b981;
+        }
+
+        .btn-apply-suggestion {
+          background: #38bdf8;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-weight: 600;
+          font-size: 13px;
+          transition: all 0.2s;
+        }
+
+        .btn-apply-suggestion:hover {
+          background: #0ea5e9;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
       `}</style>
     </div>
   );
