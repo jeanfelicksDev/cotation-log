@@ -326,9 +326,10 @@ export async function deleteQuotation(id: string) {
 
 export async function getFreightRates() {
   try {
-    return await prisma.freightRate.findMany({
+    const rates = await prisma.freightRate.findMany({
       orderBy: { createdAt: "desc" }
     });
+    return JSON.parse(JSON.stringify(rates));
   } catch (error) {
     console.error("Error fetching freight rates:", error);
     return [];
@@ -339,7 +340,7 @@ export async function createFreightRate(data: { carrier: string; origin: string;
   try {
     const rate = await prisma.freightRate.create({ data });
     revalidatePath("/tariffs");
-    return rate;
+    return JSON.parse(JSON.stringify(rate));
   } catch (error) {
     console.error("Error creating freight rate:", error);
     throw error;
@@ -350,7 +351,7 @@ export async function updateFreightRate(id: string, data: any) {
   try {
     const rate = await prisma.freightRate.update({ where: { id }, data });
     revalidatePath("/tariffs");
-    return rate;
+    return JSON.parse(JSON.stringify(rate));
   } catch (error) {
     console.error("Error updating freight rate:", error);
     throw error;
