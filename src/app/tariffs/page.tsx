@@ -389,6 +389,8 @@ export default function TariffsPage() {
           height: 44px;
           padding: 0 20px;
           border-radius: 12px;
+          border: none;
+          box-sizing: border-box;
           font-weight: 600;
           font-size: 14px;
           color: #fff;
