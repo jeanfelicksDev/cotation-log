@@ -28,6 +28,7 @@ import {
 import { generateQuotationPDF } from "@/lib/export-pdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import QuotationTree from "@/components/QuotationTree";
 
 export default function TrackingPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function TrackingPage() {
   const [filterDateRange, setFilterDateRange] = useState("all");
   const [loading, setLoading] = useState(true);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [treeFilters, setTreeFilters] = useState<{ year?: number; month?: number; client?: string; quoteId?: string }>({});
 
   useEffect(() => {
     loadData();
@@ -107,11 +109,39 @@ export default function TrackingPage() {
       }
     }
 
+    // Tree-based filters
+    if (treeFilters.year) {
+      if (new Date(offer.createdAt).getFullYear() !== treeFilters.year) return false;
+    }
+    if (treeFilters.client) {
+      if (offer.clientName !== treeFilters.client) return false;
+    }
+    if (treeFilters.quoteId) {
+      if (offer.id !== treeFilters.quoteId) return false;
+    }
+
     return matchesSearch && matchesStatus && matchesDirection;
   });
 
   return (
-    <div className="tracking-container">
+    <div className="tracking-wrapper">
+      <aside className="tracking-sidebar">
+        <QuotationTree 
+          data={offers} 
+          onSelect={setTreeFilters} 
+          selectedId={treeFilters.quoteId} 
+        />
+        {Object.keys(treeFilters).length > 0 && (
+          <button 
+            className="btn-reset-tree"
+            onClick={() => setTreeFilters({})}
+          >
+            Réinitialiser l'explorateur
+          </button>
+        )}
+      </aside>
+
+      <div className="tracking-container">
       <header className="page-header">
         <div>
           <h1 className="page-title">Suivi des Offres</h1>
@@ -257,11 +287,48 @@ export default function TrackingPage() {
           </div>
         )}
       </div>
+    </div>
 
-      <style jsx>{`
-        .tracking-container {
-          max-width: 1200px;
+    <style jsx>{`
+        .tracking-wrapper {
+          display: flex;
+          gap: 24px;
+          align-items: flex-start;
+          max-width: 1600px;
           margin: 0 auto;
+        }
+
+        .tracking-sidebar {
+          width: 300px;
+          position: sticky;
+          top: 24px;
+          height: calc(100vh - 48px);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .btn-reset-tree {
+          width: 100%;
+          padding: 10px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-surface);
+          color: var(--text-muted);
+          font-size: 13px;
+          font-weight: 600;
+          transition: all 0.2s;
+        }
+
+        .btn-reset-tree:hover {
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--primary);
+          border-color: var(--primary);
+        }
+
+        .tracking-container {
+          flex: 1;
+          min-width: 0; /* Prevents flex items from overflowing */
         }
 
         .page-header {
