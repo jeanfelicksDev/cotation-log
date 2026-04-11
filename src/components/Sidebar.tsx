@@ -17,10 +17,10 @@ import { motion } from "framer-motion";
 import { clsx } from "clsx";
 
 const navItems = [
-  { name: "Dashboard", href: "/", icon: BarChart3 },
-  { name: "Nouvelle Cotation", href: "/quote/new", icon: FilePlus },
-  { name: "Suivi des Offres", href: "/tracking", icon: History },
-  { name: "Grilles Tarifaires", href: "/tariffs", icon: Layers },
+  { name: "Dashboard",       href: "/",          icon: BarChart3, color: "#f97316" },
+  { name: "Nouvelle Cotation", href: "/quote/new", icon: FilePlus,  color: "#f59e0b" },
+  { name: "Suivi des Offres",  href: "/tracking",  icon: History,   color: "#e879f9" },
+  { name: "Grilles Tarifaires",href: "/tariffs",   icon: Layers,    color: "#fb7185" },
 ];
 
 export default function Sidebar() {
@@ -44,8 +44,8 @@ export default function Sidebar() {
                 whileHover={{ x: 5 }}
                 className={clsx("nav-item", isActive && "active")}
               >
-                <item.icon size={20} className="icon" />
-                <span className="nav-text">{item.name}</span>
+                <item.icon size={20} className="icon" color={item.color} style={{ color: item.color, filter: `drop-shadow(0 0 5px ${item.color}66)` }} />
+                <span className="nav-text" style={{ marginLeft: "3px" }}>{item.name}</span>
                 {isActive && (
                   <motion.div
                     layoutId="active-indicator"
@@ -63,8 +63,8 @@ export default function Sidebar() {
       <div className="sidebar-footer">
         <Link href="/settings">
           <div className={clsx("nav-item", pathname === "/settings" && "active")}>
-            <Settings size={20} className="icon" />
-            <span className="nav-text">Paramètres</span>
+            <Settings size={20} className="icon" style={{ color: "#94a3b8" }} />
+            <span className="nav-text" style={{ marginLeft: "3px" }}>Paramètres</span>
           </div>
         </Link>
         <div className="divider" />
