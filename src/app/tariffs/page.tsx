@@ -67,7 +67,6 @@ export default function TariffsPage() {
 
   async function loadMaison() {
     setMaisonLoading(true);
-    await seedTariffs();
     const data = await getTariffs();
     setTariffs(data);
     setMaisonLoading(false);
