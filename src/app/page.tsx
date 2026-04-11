@@ -133,7 +133,7 @@ export default function Dashboard() {
                   <tr key={quote.id}>
                     <td><span className="ref-tag">{quote.reference}</span></td>
                     <td>{quote.clientName}</td>
-                    <td>{quote.origin} -> {quote.destination}</td>
+                    <td>{quote.origin} &rarr; {quote.destination}</td>
                     <td className="amount">{quote.totalFinal.toLocaleString('fr-FR')} €</td>
                     <td>
                       <span className={`status-pill ${quote.status.toLowerCase()}`}>
