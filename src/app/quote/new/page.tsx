@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
@@ -18,8 +18,8 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { generateQuotationPDF } from "@/lib/export-pdf";
-import { getParameters, saveQuotation } from "@/lib/actions";
-import { useRouter } from "next/navigation";
+import { getParameters, saveQuotation, getQuotationById, updateQuotation } from "@/lib/actions";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type CostLine = {
   id: string;
@@ -39,7 +39,9 @@ type Parameter = {
   value: string;
 };
 
-export default function NewQuote() {
+function QuoteForm() {
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("id");
   const [step, setStep] = useState(1);
   const [client, setClient] = useState("");
   const [direction, setDirection] = useState<"import" | "export">("import");
@@ -58,7 +60,42 @@ export default function NewQuote() {
 
   useEffect(() => {
     loadParams();
-  }, []);
+    if (editId) {
+      loadQuotation(editId);
+    }
+  }, [editId]);
+
+  const loadQuotation = async (id: string) => {
+    const q = await getQuotationById(id);
+    if (q) {
+      setClient(q.clientName);
+      setDirection(q.direction as any);
+      setOrigin(q.origin);
+      setDestination(q.destination);
+      setCommodity(q.commodity);
+      setMode("sea");
+      setBaseCosts(q.items.map((i: any) => ({
+        id: i.id,
+        description: i.description,
+        amount: i.amount,
+        currency: i.currency,
+        type: i.type,
+        isForwarding: i.isForwarding,
+        buyAmount: i.buyAmount,
+        marginRate: i.marginRate
+      })));
+      if (q.containers && q.containers.length > 0) {
+        setContainers(q.containers.map((c: any) => ({
+          id: c.id,
+          type: c.type,
+          quantity: c.quantity
+        })));
+      }
+      if (q.totalBase && q.totalFinal) {
+         setMarge(Math.round(((q.totalFinal - q.totalBase) / q.totalBase) * 100));
+      }
+    }
+  };
 
   const loadParams = async () => {
     const data = await getParameters();
@@ -116,7 +153,7 @@ export default function NewQuote() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await saveQuotation({
+      const data = {
         clientName: client,
         direction,
         origin,
@@ -127,8 +164,15 @@ export default function NewQuote() {
         margin: totalWithMarge - totalBase,
         items: baseCosts,
         containers
-      });
-      alert("Cotation enregistrée avec succès !");
+      };
+      
+      if (editId) {
+        await updateQuotation(editId, data);
+      } else {
+        await saveQuotation(data);
+      }
+      
+      alert(`Cotation ${editId ? "modifiée" : "enregistrée"} avec succès !`);
       router.push("/tracking");
     } catch (err) {
       alert("Erreur lors de l'enregistrement de la cotation.");
@@ -143,9 +187,9 @@ export default function NewQuote() {
         <div className="breadcrumb">
           <span>Cotations</span>
           <ChevronRight size={14} />
-          <span className="current">Nouvelle Offre</span>
+          <span className="current">{editId ? "Modifier l'Offre" : "Nouvelle Offre"}</span>
         </div>
-        <h1 className="page-title">Créer une Cotation</h1>
+        <h1 className="page-title">{editId ? "Modifier la Cotation" : "Créer une Cotation"}</h1>
       </header>
 
       <div className="wizard-stepper">
@@ -1150,5 +1194,13 @@ export default function NewQuote() {
         .rotate-180 { transform: rotate(180deg); }
       `}</style>
     </div>
+  );
+}
+
+export default function NewQuote() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, textAlign: "center" }}>Chargement...</div>}>
+      <QuoteForm />
+    </Suspense>
   );
 }

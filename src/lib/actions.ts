@@ -230,6 +230,73 @@ export async function getQuotations() {
   }
 }
 
+export async function getQuotationById(id: string) {
+  try {
+    return await prisma.quotation.findUnique({
+      where: { id },
+      include: {
+        items: true,
+        containers: true
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching quotation:", error);
+    return null;
+  }
+}
+
+export async function updateQuotation(id: string, data: any) {
+  try {
+    const { 
+      clientName, direction, status, origin, destination, commodity,
+      totalBase, totalFinal, margin, items, containers 
+    } = data;
+
+    // Delete existing related items and containers, then recreate
+    await prisma.quotationItem.deleteMany({ where: { quotationId: id } });
+    await prisma.containerType.deleteMany({ where: { quotationId: id } });
+
+    const quotation = await prisma.quotation.update({
+      where: { id },
+      data: {
+        clientName,
+        direction,
+        status: status || "Draft",
+        origin,
+        destination,
+        commodity,
+        totalBase,
+        totalFinal,
+        margin,
+        items: {
+          create: items.map((item: any) => ({
+            description: item.description,
+            amount: item.amount,
+            type: item.type,
+            currency: item.currency,
+            isForwarding: item.isForwarding || false,
+            buyAmount: item.buyAmount,
+            marginRate: item.marginRate
+          }))
+        },
+        containers: {
+          create: containers.map((c: any) => ({
+            type: c.type,
+            quantity: c.quantity
+          }))
+        }
+      }
+    });
+
+    revalidatePath("/tracking");
+    revalidatePath("/");
+    return quotation;
+  } catch (error) {
+    console.error("Error updating quotation:", error);
+    throw error;
+  }
+}
+
 export async function updateQuotationStatus(id: string, status: string) {
   try {
     await prisma.quotation.update({

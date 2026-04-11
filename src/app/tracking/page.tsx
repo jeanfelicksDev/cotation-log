@@ -14,8 +14,10 @@ import {
   ChevronDown,
   Trash2,
   Calendar,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Edit
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { 
   getQuotations, 
@@ -28,6 +30,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function TrackingPage() {
+  const router = useRouter();
   const [offers, setOffers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Tous");
@@ -229,6 +232,9 @@ export default function TrackingPage() {
                   <td className="actions-cell">
                     <button className="action-btn" title="Télécharger PDF" onClick={() => handleDownload(offer)}>
                       <FileText size={16} />
+                    </button>
+                    <button className="action-btn" title="Modifier" onClick={() => router.push(`/quote/new?id=${offer.id}`)}>
+                      <Edit size={16} />
                     </button>
                     <button className="action-btn delete" title="Supprimer" onClick={() => handleDelete(offer.id)}>
                       <Trash2 size={16} />
