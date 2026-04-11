@@ -251,7 +251,8 @@ export default function TariffsPage() {
   const themeGlow = activeTab === "maison" ? "rgba(16, 185, 129, 0.4)" : "rgba(168, 85, 247, 0.4)";
 
   return (
-    <div className="tariffs-container" style={{ ["--theme-color" as any]: themeColor, ["--theme-glow" as any]: themeGlow }}>
+    <>
+      <div className="tariffs-container" style={{ ["--theme-color" as any]: themeColor, ["--theme-glow" as any]: themeGlow }}>
       <header className="page-header">
         <div>
           <h1 className="page-title">Grilles Tarifaires</h1>
@@ -766,131 +767,130 @@ export default function TariffsPage() {
         .border-l { border-left: 1px solid var(--border-surface); }
         .whitespace-nowrap { white-space: nowrap; }
       `}</style>
-      {/* --- UNIFIED MODAL SYSTEM (Outside relative container) --- */}
-      <AnimatePresence>
-        {activeModal && (
-          <motion.div 
-            className="modal-overlay" 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="modal-content" 
-              initial={{ scale: 0.9, y: 20 }} 
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-            >
-              <div className="modal-header">
-                <h2>
-                  {activeModal === "maison" 
-                    ? (editingTariff ? "Modifier Tarif Maison" : "Nouveau Tarif Maison")
-                    : (editingRate ? "Modifier Tarif Armateur" : "Nouveau Tarif Armateur")
-                  }
-                </h2>
-                <button onClick={() => setActiveModal(null)}><X size={20} /></button>
-              </div>
-
-              {activeModal === "maison" ? (
-                <form onSubmit={handleSubmitMaison}>
-                  <div className="form-grid">
-                    <div className="input-group">
-                      <label>Zone / Destination</label>
-                      <input type="text" required value={newTariff.zone} onChange={e => setNewTariff({...newTariff, zone: e.target.value})} placeholder="ex: Europe, Asie..." />
-                    </div>
-                    <div className="input-group">
-                      <label>Type de tarif</label>
-                      <select value={newTariff.type} onChange={e => setNewTariff({...newTariff, type: e.target.value})}>
-                        <option value="Fret">Fret</option>
-                        <option value="THC">THC</option>
-                        <option value="Surestaries">Surestaries</option>
-                        <option value="Autre">Autre</option>
-                      </select>
-                    </div>
-                    <div className="input-group full-width">
-                      <label>Description détaillée</label>
-                      <input type="text" required value={newTariff.description} onChange={e => setNewTariff({...newTariff, description: e.target.value})} placeholder="Détails du service..." />
-                    </div>
-                    <div className="input-group">
-                      <label>Montant</label>
-                      <input type="number" required value={newTariff.amount} onChange={e => setNewTariff({...newTariff, amount: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Devise</label>
-                      <select value={newTariff.currency} onChange={e => setNewTariff({...newTariff, currency: e.target.value})}>
-                        <option value="EUR">Euro (€)</option>
-                        <option value="XOF">FCFA (CFA)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
-                    <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer" : "Créer"}</button>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleSubmitForwarder}>
-                  <div className="form-grid">
-                    <div className="input-group full-width">
-                      <label>Compagnie Maritime / Armateur</label>
-                      <input type="text" required value={newRate.carrier} onChange={e => setNewRate({...newRate, carrier: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Port de Départ</label>
-                      <input type="text" list="origins-list" required value={newRate.origin} onChange={e => setNewRate({...newRate, origin: e.target.value})} />
-                      <datalist id="origins-list">
-                        {origins.map((o: any) => <option key={o.id} value={o.value}>{o.label}</option>)}
-                      </datalist>
-                    </div>
-                    <div className="input-group">
-                      <label>Port d'Arrivée</label>
-                      <input type="text" list="dest-list" required value={newRate.destination} onChange={e => setNewRate({...newRate, destination: e.target.value})} />
-                      <datalist id="dest-list">
-                        {destinations.map((d: any) => <option key={d.id} value={d.value}>{d.label}</option>)}
-                      </datalist>
-                    </div>
-                    <div className="input-group">
-                      <label>Type de Conteneur</label>
-                      <select required value={newRate.containerType} onChange={e => setNewRate({...newRate, containerType: e.target.value})}>
-                        <option value="">Sélectionner...</option>
-                        {containers.map((c: any) => <option key={c.id} value={c.value}>{c.label}</option>)}
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>Marchandise</label>
-                      <input type="text" required value={newRate.commodity} onChange={e => setNewRate({...newRate, commodity: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Démarrage Validité</label>
-                      <input type="date" required value={newRate.validFrom} onChange={e => setNewRate({...newRate, validFrom: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Fin Validité</label>
-                      <input type="date" required value={newRate.validTo} onChange={e => setNewRate({...newRate, validTo: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Montant (Achat)</label>
-                      <input type="number" step="0.01" required value={newRate.amount} onChange={e => setNewRate({...newRate, amount: e.target.value})} />
-                    </div>
-                    <div className="input-group">
-                      <label>Devise</label>
-                      <select value={newRate.currency} onChange={e => setNewRate({...newRate, currency: e.target.value})}>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="USD">USD ($)</option>
-                        <option value="XOF">XOF (CFA)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
-                    <button type="submit" className="btn-submit">{editingRate ? "Modifier" : "Ajouter"}</button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
-  );
-}
+
+    <AnimatePresence>
+      {activeModal && (
+        <motion.div 
+          className="modal-overlay" 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          exit={{ opacity: 0 }}
+        >
+          <motion.div 
+            className="modal-content" 
+            initial={{ scale: 0.9, y: 20 }} 
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+          >
+            <div className="modal-header">
+              <h2>
+                {activeModal === "maison" 
+                  ? (editingTariff ? "Modifier Tarif Maison" : "Nouveau Tarif Maison")
+                  : (editingRate ? "Modifier Tarif Armateur" : "Nouveau Tarif Armateur")
+                }
+              </h2>
+              <button onClick={() => setActiveModal(null)}><X size={20} /></button>
+            </div>
+
+            {activeModal === "maison" ? (
+              <form onSubmit={handleSubmitMaison}>
+                <div className="form-grid">
+                  <div className="input-group">
+                    <label>Zone / Destination</label>
+                    <input type="text" required value={newTariff.zone} onChange={e => setNewTariff({...newTariff, zone: e.target.value})} placeholder="ex: Europe, Asie..." />
+                  </div>
+                  <div className="input-group">
+                    <label>Type de tarif</label>
+                    <select value={newTariff.type} onChange={e => setNewTariff({...newTariff, type: e.target.value})}>
+                      <option value="Fret">Fret</option>
+                      <option value="THC">THC</option>
+                      <option value="Surestaries">Surestaries</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                  <div className="input-group full-width">
+                    <label>Description détaillée</label>
+                    <input type="text" required value={newTariff.description} onChange={e => setNewTariff({...newTariff, description: e.target.value})} placeholder="Détails du service..." />
+                  </div>
+                  <div className="input-group">
+                    <label>Montant</label>
+                    <input type="number" required value={newTariff.amount} onChange={e => setNewTariff({...newTariff, amount: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Devise</label>
+                    <select value={newTariff.currency} onChange={e => setNewTariff({...newTariff, currency: e.target.value})}>
+                      <option value="EUR">Euro (€)</option>
+                      <option value="XOF">FCFA (CFA)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer" : "Créer"}</button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmitForwarder}>
+                <div className="form-grid">
+                  <div className="input-group full-width">
+                    <label>Compagnie Maritime / Armateur</label>
+                    <input type="text" required value={newRate.carrier} onChange={e => setNewRate({...newRate, carrier: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Port de Départ</label>
+                    <input type="text" list="origins-list" required value={newRate.origin} onChange={e => setNewRate({...newRate, origin: e.target.value})} />
+                    <datalist id="origins-list">
+                      {origins.map((o: any) => <option key={o.id} value={o.value}>{o.label}</option>)}
+                    </datalist>
+                  </div>
+                  <div className="input-group">
+                    <label>Port d'Arrivée</label>
+                    <input type="text" list="dest-list" required value={newRate.destination} onChange={e => setNewRate({...newRate, destination: e.target.value})} />
+                    <datalist id="dest-list">
+                      {destinations.map((d: any) => <option key={d.id} value={d.value}>{d.label}</option>)}
+                    </datalist>
+                  </div>
+                  <div className="input-group">
+                    <label>Type de Conteneur</label>
+                    <select required value={newRate.containerType} onChange={e => setNewRate({...newRate, containerType: e.target.value})}>
+                      <option value="">Sélectionner...</option>
+                      {containers.map((c: any) => <option key={c.id} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <label>Marchandise</label>
+                    <input type="text" required value={newRate.commodity} onChange={e => setNewRate({...newRate, commodity: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Démarrage Validité</label>
+                    <input type="date" required value={newRate.validFrom} onChange={e => setNewRate({...newRate, validFrom: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Fin Validité</label>
+                    <input type="date" required value={newRate.validTo} onChange={e => setNewRate({...newRate, validTo: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Montant (Achat)</label>
+                    <input type="number" step="0.01" required value={newRate.amount} onChange={e => setNewRate({...newRate, amount: e.target.value})} />
+                  </div>
+                  <div className="input-group">
+                    <label>Devise</label>
+                    <select value={newRate.currency} onChange={e => setNewRate({...newRate, currency: e.target.value})}>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="XOF">XOF (CFA)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn-submit">{editingRate ? "Modifier" : "Ajouter"}</button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
