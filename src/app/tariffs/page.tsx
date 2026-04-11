@@ -265,7 +265,10 @@ export default function TariffsPage() {
         <div className="tabs-container">
           <button 
             className={`tab-btn ${activeTab === "maison" ? "active" : ""}`}
-            onClick={() => setActiveTab("maison")}
+            onClick={() => {
+              setActiveTab("maison");
+              setActiveModal(null);
+            }}
           >
             <Home size={16} />
             <span>Nos Tarifs (Maison)</span>
@@ -273,7 +276,10 @@ export default function TariffsPage() {
           </button>
           <button 
             className={`tab-btn ${activeTab === "forwarder" ? "active" : ""}`}
-            onClick={() => setActiveTab("forwarder")}
+            onClick={() => {
+              setActiveTab("forwarder");
+              setActiveModal(null);
+            }}
           >
             <Globe size={16} />
             <span>Tarif Armateur (Forwarder)</span>
@@ -408,8 +414,6 @@ export default function TariffsPage() {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
-
       </AnimatePresence>
 
       <style jsx>{`
@@ -650,28 +654,29 @@ export default function TariffsPage() {
 
         /* Modal Styles */
         .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(10px);
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          background: rgba(0, 0, 0, 0.8) !important;
+          backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 1000;
+          z-index: 10000 !important;
           padding: 20px;
         }
 
         .modal-content {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-surface);
-          border-radius: 24px;
+          background: #111;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
           width: 100%;
-          max-width: 650px;
-          max-height: 90vh;
-          overflow-y: auto;
+          max-width: 600px;
+          position: relative;
+          z-index: 10001;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .modal-header {
