@@ -230,10 +230,10 @@ export default function TrackingPage() {
                     </select>
                   </td>
                   <td className="actions-cell">
-                    <button className="action-btn" title="Télécharger PDF" onClick={() => handleDownload(offer)}>
+                    <button className="action-btn download" title="Télécharger PDF" onClick={() => handleDownload(offer)}>
                       <FileText size={16} />
                     </button>
-                    <button className="action-btn" title="Modifier" onClick={() => router.push(`/quote/new?id=${offer.id}`)}>
+                    <button className="action-btn edit" title="Modifier" onClick={() => router.push(`/quote/new?id=${offer.id}`)}>
                       <Edit size={16} />
                     </button>
                     <button className="action-btn delete" title="Supprimer" onClick={() => handleDelete(offer.id)}>
@@ -533,9 +533,48 @@ export default function TrackingPage() {
           font-size: 13px;
         }
 
+        .actions-cell {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          justify-content: center;
+        }
+
+        .action-btn {
+          color: #ffffff;
+          background: transparent;
+          border: none;
+          padding: 8px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0.8;
+        }
+
+        .action-btn:hover {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+
+        .action-btn.download:hover {
+          color: #10b981;
+          background: rgba(16, 185, 129, 0.15);
+          box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .action-btn.edit:hover {
+          color: #3b82f6;
+          background: rgba(59, 130, 246, 0.15);
+          box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
         .action-btn.delete:hover {
           color: #ef4444;
-          background: rgba(239, 68, 68, 0.1);
+          background: rgba(239, 68, 68, 0.15);
+          box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
       `}</style>
     </div>
