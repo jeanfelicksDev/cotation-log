@@ -307,6 +307,7 @@ export default function Dashboard() {
           display: grid;
           grid-template-columns: 2fr 1fr;
           gap: 24px;
+          margin-top: 3cm;
         }
 
         .content-card {
