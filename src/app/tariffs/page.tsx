@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
@@ -416,6 +417,23 @@ export default function TariffsPage() {
         )}
       </AnimatePresence>
 
+      {/* Modal rendered via Portal into document.body to avoid CSS context issues */}
+      <TariffModal
+        activeModal={activeModal}
+        editingTariff={editingTariff}
+        editingRate={editingRate}
+        newTariff={newTariff}
+        setNewTariff={setNewTariff}
+        newRate={newRate}
+        setNewRate={setNewRate}
+        onClose={() => setActiveModal(null)}
+        onSubmitMaison={handleSubmitMaison}
+        onSubmitForwarder={handleSubmitForwarder}
+        origins={origins}
+        destinations={destinations}
+        containers={containers}
+      />
+
       <style jsx>{`
         .tariffs-container {
           max-width: 1000px;
@@ -773,129 +791,186 @@ export default function TariffsPage() {
         .whitespace-nowrap { white-space: nowrap; }
       `}</style>
     </div>
+  );
+}
 
-    <AnimatePresence>
-      {activeModal && (
-        <motion.div 
-          className="modal-overlay" 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          exit={{ opacity: 0 }}
-        >
-          <motion.div 
-            className="modal-content" 
-            initial={{ scale: 0.9, y: 20 }} 
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-          >
-            <div className="modal-header">
-              <h2>
-                {activeModal === "maison" 
-                  ? (editingTariff ? "Modifier Tarif Maison" : "Nouveau Tarif Maison")
-                  : (editingRate ? "Modifier Tarif Armateur" : "Nouveau Tarif Armateur")
-                }
-              </h2>
-              <button onClick={() => setActiveModal(null)}><X size={20} /></button>
+// --- PORTAL MODAL COMPONENT ---
+function TariffModal({ activeModal, editingTariff, editingRate, newTariff, setNewTariff, newRate, setNewRate, onClose, onSubmitMaison, onSubmitForwarder, origins, destinations, containers }: any) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+  if (!mounted || !activeModal) return null;
+
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    backdropFilter: 'blur(10px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 99999,
+    padding: '20px',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    background: '#0f0f0f',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '20px',
+    width: '100%',
+    maxWidth: '600px',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    padding: '24px',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  };
+
+  const themeColor = activeModal === 'maison' ? '#10b981' : '#a855f7';
+  const themeGlow = activeModal === 'maison' ? 'rgba(16,185,129,0.4)' : 'rgba(168,85,247,0.4)';
+
+  const modal = (
+    <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={contentStyle}>
+        <div style={headerStyle}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+            {activeModal === 'maison'
+              ? (editingTariff ? 'Modifier Tarif Maison' : 'Nouveau Tarif Maison')
+              : (editingRate ? 'Modifier Tarif Armateur' : 'Nouveau Tarif Armateur')
+            }
+          </h2>
+          <button onClick={onClose} style={{ color: '#999', display: 'flex', padding: '4px' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {activeModal === 'maison' ? (
+          <form onSubmit={onSubmitMaison} style={{ padding: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <FieldGroup label="Zone / Destination">
+                <Input value={newTariff.zone} onChange={(v: string) => setNewTariff({ ...newTariff, zone: v })} placeholder="ex: Europe, Asie..." required />
+              </FieldGroup>
+              <FieldGroup label="Type de tarif">
+                <Select value={newTariff.type} onChange={(v: string) => setNewTariff({ ...newTariff, type: v })} options={[
+                  { value: 'Fret', label: 'Fret' }, { value: 'THC', label: 'THC' },
+                  { value: 'Surestaries', label: 'Surestaries' }, { value: 'Autre', label: 'Autre' }
+                ]} />
+              </FieldGroup>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <FieldGroup label="Description détaillée">
+                  <Input value={newTariff.description} onChange={(v: string) => setNewTariff({ ...newTariff, description: v })} placeholder="Détails du service..." required />
+                </FieldGroup>
+              </div>
+              <FieldGroup label="Montant">
+                <Input type="number" value={newTariff.amount} onChange={(v: string) => setNewTariff({ ...newTariff, amount: v })} required />
+              </FieldGroup>
+              <FieldGroup label="Devise">
+                <Select value={newTariff.currency} onChange={(v: string) => setNewTariff({ ...newTariff, currency: v })} options={[
+                  { value: 'EUR', label: 'Euro (€)' }, { value: 'XOF', label: 'FCFA (CFA)' }
+                ]} />
+              </FieldGroup>
             </div>
+            <ModalFooter onClose={onClose} isEdit={!!editingTariff} themeColor={themeColor} themeGlow={themeGlow} />
+          </form>
+        ) : (
+          <form onSubmit={onSubmitForwarder} style={{ padding: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <FieldGroup label="Compagnie Maritime / Armateur">
+                  <Input value={newRate.carrier} onChange={(v: string) => setNewRate({ ...newRate, carrier: v })} required />
+                </FieldGroup>
+              </div>
+              <FieldGroup label="Port de Départ">
+                <Input list="port-origin" value={newRate.origin} onChange={(v: string) => setNewRate({ ...newRate, origin: v })} required />
+                <datalist id="port-origin">{origins.map((o: any) => <option key={o.id} value={o.value} />)}</datalist>
+              </FieldGroup>
+              <FieldGroup label="Port d'Arrivée">
+                <Input list="port-dest" value={newRate.destination} onChange={(v: string) => setNewRate({ ...newRate, destination: v })} required />
+                <datalist id="port-dest">{destinations.map((d: any) => <option key={d.id} value={d.value} />)}</datalist>
+              </FieldGroup>
+              <FieldGroup label="Type de Conteneur">
+                <Select value={newRate.containerType} onChange={(v: string) => setNewRate({ ...newRate, containerType: v })} required options={[
+                  { value: '', label: 'Sélectionner...' },
+                  ...containers.map((c: any) => ({ value: c.value, label: c.label }))
+                ]} />
+              </FieldGroup>
+              <FieldGroup label="Marchandise">
+                <Input value={newRate.commodity} onChange={(v: string) => setNewRate({ ...newRate, commodity: v })} required />
+              </FieldGroup>
+              <FieldGroup label="Démarrage Validité">
+                <Input type="date" value={newRate.validFrom} onChange={(v: string) => setNewRate({ ...newRate, validFrom: v })} required />
+              </FieldGroup>
+              <FieldGroup label="Fin Validité">
+                <Input type="date" value={newRate.validTo} onChange={(v: string) => setNewRate({ ...newRate, validTo: v })} required />
+              </FieldGroup>
+              <FieldGroup label="Montant (Achat)">
+                <Input type="number" step="0.01" value={newRate.amount} onChange={(v: string) => setNewRate({ ...newRate, amount: v })} required />
+              </FieldGroup>
+              <FieldGroup label="Devise">
+                <Select value={newRate.currency} onChange={(v: string) => setNewRate({ ...newRate, currency: v })} options={[
+                  { value: 'EUR', label: 'EUR (€)' }, { value: 'USD', label: 'USD ($)' }, { value: 'XOF', label: 'XOF (CFA)' }
+                ]} />
+              </FieldGroup>
+            </div>
+            <ModalFooter onClose={onClose} isEdit={!!editingRate} themeColor={themeColor} themeGlow={themeGlow} />
+          </form>
+        )}
+      </div>
+    </div>
+  );
 
-            {activeModal === "maison" ? (
-              <form onSubmit={handleSubmitMaison}>
-                <div className="form-grid">
-                  <div className="input-group">
-                    <label>Zone / Destination</label>
-                    <input type="text" required value={newTariff.zone} onChange={e => setNewTariff({...newTariff, zone: e.target.value})} placeholder="ex: Europe, Asie..." />
-                  </div>
-                  <div className="input-group">
-                    <label>Type de tarif</label>
-                    <select value={newTariff.type} onChange={e => setNewTariff({...newTariff, type: e.target.value})}>
-                      <option value="Fret">Fret</option>
-                      <option value="THC">THC</option>
-                      <option value="Surestaries">Surestaries</option>
-                      <option value="Autre">Autre</option>
-                    </select>
-                  </div>
-                  <div className="input-group full-width">
-                    <label>Description détaillée</label>
-                    <input type="text" required value={newTariff.description} onChange={e => setNewTariff({...newTariff, description: e.target.value})} placeholder="Détails du service..." />
-                  </div>
-                  <div className="input-group">
-                    <label>Montant</label>
-                    <input type="number" required value={newTariff.amount} onChange={e => setNewTariff({...newTariff, amount: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Devise</label>
-                    <select value={newTariff.currency} onChange={e => setNewTariff({...newTariff, currency: e.target.value})}>
-                      <option value="EUR">Euro (€)</option>
-                      <option value="XOF">FCFA (CFA)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
-                  <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer" : "Créer"}</button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleSubmitForwarder}>
-                <div className="form-grid">
-                  <div className="input-group full-width">
-                    <label>Compagnie Maritime / Armateur</label>
-                    <input type="text" required value={newRate.carrier} onChange={e => setNewRate({...newRate, carrier: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Port de Départ</label>
-                    <input type="text" list="origins-list" required value={newRate.origin} onChange={e => setNewRate({...newRate, origin: e.target.value})} />
-                    <datalist id="origins-list">
-                      {origins.map((o: any) => <option key={o.id} value={o.value}>{o.label}</option>)}
-                    </datalist>
-                  </div>
-                  <div className="input-group">
-                    <label>Port d'Arrivée</label>
-                    <input type="text" list="dest-list" required value={newRate.destination} onChange={e => setNewRate({...newRate, destination: e.target.value})} />
-                    <datalist id="dest-list">
-                      {destinations.map((d: any) => <option key={d.id} value={d.value}>{d.label}</option>)}
-                    </datalist>
-                  </div>
-                  <div className="input-group">
-                    <label>Type de Conteneur</label>
-                    <select required value={newRate.containerType} onChange={e => setNewRate({...newRate, containerType: e.target.value})}>
-                      <option value="">Sélectionner...</option>
-                      {containers.map((c: any) => <option key={c.id} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div className="input-group">
-                    <label>Marchandise</label>
-                    <input type="text" required value={newRate.commodity} onChange={e => setNewRate({...newRate, commodity: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Démarrage Validité</label>
-                    <input type="date" required value={newRate.validFrom} onChange={e => setNewRate({...newRate, validFrom: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Fin Validité</label>
-                    <input type="date" required value={newRate.validTo} onChange={e => setNewRate({...newRate, validTo: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Montant (Achat)</label>
-                    <input type="number" step="0.01" required value={newRate.amount} onChange={e => setNewRate({...newRate, amount: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Devise</label>
-                    <select value={newRate.currency} onChange={e => setNewRate({...newRate, currency: e.target.value})}>
-                      <option value="EUR">EUR (€)</option>
-                      <option value="USD">USD ($)</option>
-                      <option value="XOF">XOF (CFA)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
-                  <button type="submit" className="btn-submit">{editingRate ? "Modifier" : "Ajouter"}</button>
-                </div>
-              </form>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-    </>
+  return createPortal(modal, document.body);
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+  padding: '11px 14px', borderRadius: '10px', color: '#fff', fontSize: '14px', boxSizing: 'border-box',
+};
+
+function Input({ value, onChange, placeholder, type = 'text', required, list, step }: any) {
+  return <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+    required={required} list={list} step={step} style={inputStyle} />;
+}
+
+function Select({ value, onChange, options, required }: any) {
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)} required={required}
+      style={{ ...inputStyle, cursor: 'pointer' }}>
+      {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
+function FieldGroup({ label, children }: any) {
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#888', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function ModalFooter({ onClose, isEdit, themeColor, themeGlow }: any) {
+  return (
+    <div style={{ marginTop: '24px', paddingTop: '24px', display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+      <button type="button" onClick={onClose}
+        style={{ flex: 1, padding: '13px', borderRadius: '12px', fontWeight: 600, color: '#888', background: 'rgba(255,255,255,0.05)', cursor: 'pointer' }}>
+        Annuler
+      </button>
+      <button type="submit"
+        style={{ flex: 2, padding: '13px', borderRadius: '12px', fontWeight: 700, background: themeColor, color: 'white', boxShadow: `0 4px 15px ${themeGlow}`, cursor: 'pointer' }}>
+        {isEdit ? 'Enregistrer' : 'Créer'}
+      </button>
+    </div>
+  );
+}
+
+
