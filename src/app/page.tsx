@@ -157,18 +157,56 @@ export default function Dashboard() {
             <h3>Distribution des Flux</h3>
           </div>
           <div className="chart-placeholder">
-            {/* Visual simulation of a chart */}
-            <div className="pie-sim">
-              <div className="dot" style={{ background: "#10b981", height: "80%" }}></div>
-              <div className="dot" style={{ background: "#3b82f6", height: "45%" }}></div>
-              <div className="dot" style={{ background: "#f59e0b", height: "60%" }}></div>
-              <div className="dot" style={{ background: "#8b5cf6", height: "30%" }}></div>
-            </div>
-            <div className="chart-labels">
-              <div><span className="dot" style={{ background: "#10b981" }}></span> Import</div>
-              <div><span className="dot" style={{ background: "#3b82f6" }}></span> Export</div>
-              <div><span className="dot" style={{ background: "#f59e0b" }}></span> Transit</div>
-            </div>
+            {(() => {
+              const total = data.length || 0;
+              const importCount = data.filter(q => q.direction === "import").length;
+              const exportCount = data.filter(q => q.direction === "export").length;
+              const transitCount = data.filter(q => q.direction === "transit").length;
+              const maxVal = Math.max(importCount, exportCount, transitCount, 1);
+
+              const bars = [
+                { label: "Import",  count: importCount,  color: "#10b981", pct: Math.round(importCount / maxVal * 100) },
+                { label: "Export",  count: exportCount,  color: "#3b82f6", pct: Math.round(exportCount / maxVal * 100) },
+                { label: "Transit", count: transitCount, color: "#f59e0b", pct: Math.round(transitCount / maxVal * 100) },
+              ];
+
+              return total === 0 ? (
+                <div className="chart-empty">
+                  <p>Aucune cotation pour afficher les flux.</p>
+                  <span>Créez votre première cotation.</span>
+                </div>
+              ) : (
+                <>
+                  <div className="bar-chart">
+                    {bars.map(bar => (
+                      <div key={bar.label} className="bar-col">
+                        <span className="bar-count">{bar.count}</span>
+                        <div className="bar-track">
+                          <motion.div
+                            className="bar-fill"
+                            style={{ background: bar.color, boxShadow: `0 0 10px ${bar.color}66` }}
+                            initial={{ height: 0 }}
+                            animate={{ height: `${bar.pct}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                          />
+                        </div>
+                        <span className="bar-pct" style={{ color: bar.color }}>
+                          {total > 0 ? Math.round(bar.count / total * 100) : 0}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="chart-labels">
+                    {bars.map(bar => (
+                      <div key={bar.label}>
+                        <span className="dot" style={{ background: bar.color }} />
+                        {bar.label}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </motion.div>
       </div>
@@ -351,28 +389,58 @@ export default function Dashboard() {
         .status-pill.rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
         .chart-placeholder {
-          height: 200px;
+          height: 220px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          gap: 24px;
+          justify-content: space-between;
+          padding: 8px 0;
+          gap: 16px;
         }
 
-        .pie-sim {
+        .bar-chart {
           display: flex;
           align-items: flex-end;
-          gap: 16px;
-          height: 100px;
+          gap: 28px;
+          height: 150px;
           width: 100%;
           justify-content: center;
         }
 
-        .pie-sim .dot {
-          width: 12px;
-          border-radius: 6px;
-          opacity: 0.8;
-          box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        .bar-col {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          height: 100%;
+          justify-content: flex-end;
+        }
+
+        .bar-count {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-main);
+        }
+
+        .bar-track {
+          width: 22px;
+          height: 110px;
+          background: rgba(255,255,255,0.06);
+          border-radius: 11px;
+          display: flex;
+          align-items: flex-end;
+          overflow: hidden;
+        }
+
+        .bar-fill {
+          width: 100%;
+          border-radius: 11px;
+          min-height: 4px;
+        }
+
+        .bar-pct {
+          font-size: 11px;
+          font-weight: 700;
         }
 
         .chart-labels {
@@ -392,7 +460,19 @@ export default function Dashboard() {
           width: 8px;
           height: 8px;
           border-radius: 50%;
+          display: inline-block;
         }
+
+        .chart-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          color: var(--text-muted);
+          text-align: center;
+        }
+        .chart-empty p { font-weight: 600; }
+        .chart-empty span { font-size: 13px; }
       `}</style>
     </div>
   );
