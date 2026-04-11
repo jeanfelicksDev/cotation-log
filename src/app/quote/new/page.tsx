@@ -18,16 +18,25 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import { generateQuotationPDF } from "@/lib/export-pdf";
+import { getParameters, saveQuotation } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 type CostLine = {
   id: string;
   description: string;
   amount: number;
   currency: string;
-  type: "fret" | "fret_air" | "thc" | "doc" | "other";
+  type: string; // Changed from enum to string for dynamic support
   isForwarding?: boolean;
   buyAmount?: number;
   marginRate?: number;
+};
+
+type Parameter = {
+  id: string;
+  category: string;
+  label: string;
+  value: string;
 };
 
 export default function NewQuote() {
@@ -43,6 +52,25 @@ export default function NewQuote() {
   ]);
   const [baseCosts, setBaseCosts] = useState<CostLine[]>([]);
   const [marge, setMarge] = useState(15); // Percentage
+  const [dbParams, setDbParams] = useState<Record<string, Parameter[]>>({});
+  const [saving, setSaving] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    loadParams();
+  }, []);
+
+  const loadParams = async () => {
+    const data = await getParameters();
+    const grouped = data.reduce((acc, curr) => {
+      // @ts-ignore
+      if (!acc[curr.category]) acc[curr.category] = [];
+      // @ts-ignore
+      acc[curr.category].push(curr);
+      return acc;
+    }, {} as Record<string, Parameter[]>);
+    setDbParams(grouped);
+  };
 
   const addCostLine = () => {
     const newLine: CostLine = {
@@ -84,6 +112,30 @@ export default function NewQuote() {
     if (line.isForwarding) return acc + (Number(line.amount) || 0);
     return acc + (Number(line.amount) || 0) * (1 + marge / 100);
   }, 0);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveQuotation({
+        clientName: client,
+        direction,
+        origin,
+        destination,
+        commodity,
+        totalBase,
+        totalFinal: totalWithMarge,
+        margin: totalWithMarge - totalBase,
+        items: baseCosts,
+        containers
+      });
+      alert("Cotation enregistrée avec succès !");
+      router.push("/tracking");
+    } catch (err) {
+      alert("Erreur lors de l'enregistrement de la cotation.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="quote-builder">
@@ -149,18 +201,31 @@ export default function NewQuote() {
                   <div className="input-group">
                     <label>Mode de Transport</label>
                     <div className="toggle-group sm">
-                      <button 
-                        className={clsx("toggle-btn", mode === "sea" && "active")}
-                        onClick={() => setMode("sea")}
-                      >
-                        Maritime
-                      </button>
-                      <button 
-                        className={clsx("toggle-btn", mode === "air" && "active")}
-                        onClick={() => setMode("air")}
-                      >
-                        Aérien
-                      </button>
+                      {dbParams.mode?.map(p => (
+                        <button 
+                          key={p.id}
+                          className={clsx("toggle-btn", mode === p.value && "active")}
+                          onClick={() => setMode(p.value as any)}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                      {(!dbParams.mode || dbParams.mode.length === 0) && (
+                        <>
+                          <button 
+                            className={clsx("toggle-btn", mode === "sea" && "active")}
+                            onClick={() => setMode("sea")}
+                          >
+                            Maritime
+                          </button>
+                          <button 
+                            className={clsx("toggle-btn", mode === "air" && "active")}
+                            onClick={() => setMode("air")}
+                          >
+                            Aérien
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -173,29 +238,41 @@ export default function NewQuote() {
                     <label><MapPin size={14} /> Origine (Port/Aéroport)</label>
                     <input 
                       type="text" 
+                      list="origins-list"
                       placeholder="Ex: Shanghai (CNSHA)" 
                       value={origin} 
                       onChange={e => setOrigin(e.target.value)}
                     />
+                    <datalist id="origins-list">
+                      {dbParams.origin?.map(p => <option key={p.id} value={p.label} />)}
+                    </datalist>
                   </div>
                   <div className="input-group">
                     <label><MapPin size={14} className="rotate-180" /> Destination</label>
                     <input 
                       type="text" 
+                      list="destinations-list"
                       placeholder="Ex: Lomé (TGLFW)" 
                       value={destination} 
                       onChange={e => setDestination(e.target.value)}
                     />
+                    <datalist id="destinations-list">
+                      {dbParams.destination?.map(p => <option key={p.id} value={p.label} />)}
+                    </datalist>
                   </div>
                 </div>
                 <div className="input-group mt-16">
                   <label><Package size={14} /> Nature de la Marchandise</label>
                   <input 
                     type="text" 
-                    placeholder="Ex: Pièces détachées automobiles" 
+                    list="commodities-list"
+                    placeholder="Ex: Pièces détachées" 
                     value={commodity} 
                     onChange={e => setCommodity(e.target.value)}
                   />
+                  <datalist id="commodities-list">
+                    {dbParams.commodity?.map(p => <option key={p.id} value={p.label} />)}
+                  </datalist>
                 </div>
               </div>
 
@@ -220,13 +297,15 @@ export default function NewQuote() {
                           setContainers(newCnt);
                         }}
                       >
-                        <option value="20GP">20' Dry Standard</option>
-                        <option value="40GP">40' Dry Standard</option>
-                        <option value="40HC">40' High Cube</option>
-                        <option value="20RF">20' Reefer</option>
-                        <option value="40RF">40' Reefer</option>
-                        <option value="40OT">40' Open Top</option>
-                        <option value="tank">Tank / Citerne</option>
+                        {dbParams.container?.map(p => (
+                          <option key={p.id} value={p.value}>{p.label}</option>
+                        ))}
+                        {(!dbParams.container || dbParams.container.length === 0) && (
+                          <>
+                            <option value="20GP">20' Dry Standard</option>
+                            <option value="40HC">40' High Cube</option>
+                          </>
+                        )}
                       </select>
                       <div className="qty-input">
                         <button onClick={() => {
@@ -299,11 +378,16 @@ export default function NewQuote() {
                           value={line.type} 
                           onChange={e => updateCostLine(line.id, "type", e.target.value)}
                         >
-                          <option value="fret">Fret Maritime</option>
-                          <option value="fret_air">Fret Aérien</option>
-                          <option value="thc">THC / Manutation</option>
-                          <option value="doc">Documentation</option>
-                          <option value="other">Autre</option>
+                          {dbParams.cost_type?.map(p => (
+                            <option key={p.id} value={p.value}>{p.label}</option>
+                          ))}
+                          {(!dbParams.cost_type || dbParams.cost_type.length === 0) && (
+                            <>
+                              <option value="fret">Fret Maritime</option>
+                              <option value="thc">THC / Manutation</option>
+                              <option value="other">Autre</option>
+                            </>
+                          )}
                         </select>
                         <input 
                           type="text" 
@@ -319,7 +403,18 @@ export default function NewQuote() {
                             onChange={e => updateCostLine(line.id, "amount", parseFloat(e.target.value))}
                             disabled={line.isForwarding}
                           />
-                          <span>EUR</span>
+                          <select 
+                            className="currency-select"
+                            value={line.currency} 
+                            onChange={e => updateCostLine(line.id, "currency", e.target.value)}
+                          >
+                            {dbParams.currency?.map(p => (
+                              <option key={p.id} value={p.value}>{p.value.toUpperCase()}</option>
+                            ))}
+                            {(!dbParams.currency || dbParams.currency.length === 0) && (
+                              <option value="EUR">EUR</option>
+                            )}
+                          </select>
                         </div>
                         <button className="btn-delete" onClick={() => removeCostLine(line.id)}>
                           <Trash2 size={16} />
@@ -348,7 +443,7 @@ export default function NewQuote() {
                                     value={line.buyAmount || ""}
                                     onChange={e => updateCostLine(line.id, "buyAmount", parseFloat(e.target.value))}
                                   />
-                                  <span>EUR</span>
+                                  <span className="currency-label">{line.currency.toUpperCase()}</span>
                                 </div>
                               </div>
                               <div className="fwd-field margin">
@@ -484,8 +579,12 @@ export default function NewQuote() {
 
                 <div className="final-actions">
                   <button className="btn-back" onClick={() => setStep(2)}>Modifier</button>
-                  <button className="btn-save">
-                    <Save size={18} /> Enregistrer l'offre
+                  <button 
+                    className="btn-save" 
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    <Save size={18} /> {saving ? "Enregistrement..." : "Enregistrer l'offre"}
                   </button>
                   <button 
                     className="btn-export"
@@ -591,11 +690,24 @@ export default function NewQuote() {
           gap: 8px;
         }
 
-        label {
-          font-size: 13px;
-          font-weight: 600;
+        .amount-input select.currency-select {
+          background: transparent;
+          border: none;
+          color: var(--primary);
+          font-weight: 700;
+          font-size: 11px;
+          cursor: pointer;
+          width: auto;
+          padding: 0 4px;
+        }
+
+        .currency-label {
+          font-weight: 700;
+          font-size: 11px;
           color: var(--text-dim);
         }
+
+        .rotate-180 { transform: rotate(180deg); }
 
         input[type="text"],
         input[type="number"],

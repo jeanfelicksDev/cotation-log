@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
@@ -11,38 +11,99 @@ import {
   Clock, 
   FileText,
   Mail,
-  ChevronDown
+  ChevronDown,
+  Trash2,
+  Calendar,
+  ArrowRightLeft
 } from "lucide-react";
 import { clsx } from "clsx";
-
-const mockOffers = [
-  { id: "QT-2024-001", client: "Sodiam Sarl", route: "Anvers -> Dakar", amount: 2450.00, status: "Acceptée", date: "10 Avr 2024" },
-  { id: "QT-2024-002", client: "Logistics Pro", route: "Le Havre -> Abidjan", amount: 3120.00, status: "En Cours", date: "09 Avr 2024" },
-  { id: "QT-2024-003", client: "Africa Trade", route: "Valencia -> Lome", amount: 1890.00, status: "Révisée", date: "08 Avr 2024" },
-  { id: "QT-2024-004", client: "Global Transit", route: "Shanghai -> Douala", amount: 5600.00, status: "Refusée", date: "05 Avr 2024" },
-  { id: "QT-2024-005", client: "CMA CGM Agent", route: "Marseille -> Tunis", amount: 1200.00, status: "En Cours", date: "02 Avr 2024" },
-];
+import { 
+  getQuotations, 
+  deleteQuotation, 
+  updateQuotationStatus,
+  getParameters
+} from "@/lib/actions";
+import { generateQuotationPDF } from "@/lib/export-pdf";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default function TrackingPage() {
+  const [offers, setOffers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Tous");
-  
-  const getStatusIcon = (status: string) => {
-    switch(status) {
-      case "Acceptée": return <CheckCircle2 size={16} className="text-emerald-500" />;
-      case "Refusée": return <XCircle size={16} className="text-red-500" />;
-      case "En Cours": return <Clock size={16} className="text-amber-500" />;
-      case "Révisée": return <FileText size={16} className="text-purple-500" />;
-      default: return <Clock size={16} />;
+  const [filterDirection, setFilterDirection] = useState("Tous");
+  const [filterDateRange, setFilterDateRange] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    const data = await getQuotations();
+    setOffers(data);
+    setLoading(false);
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await updateQuotationStatus(id, status);
+      setOffers(offers.map(o => o.id === id ? { ...o, status } : o));
+    } catch (err) {
+      alert("Erreur lors du changement de statut.");
     }
   };
 
-  const filteredOffers = mockOffers.filter(offer => {
-    const matchesSearch = offer.client.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          offer.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "Tous" || offer.status === filterStatus;
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette offre ?")) return;
+    try {
+      await deleteQuotation(id);
+      setOffers(offers.filter(o => o.id !== id));
+    } catch (err) {
+      alert("Erreur lors de la suppression.");
+    }
+  };
+
+  const handleDownload = (offer: any) => {
+    generateQuotationPDF({
+      client: offer.clientName,
+      direction: offer.direction,
+      origin: offer.origin,
+      destination: offer.destination,
+      commodity: offer.commodity,
+      containers: offer.containers,
+      baseCosts: offer.items,
+      marge: offer.margin || 15
+    });
+  };
+
+  const filteredOffers = offers.filter(offer => {
+    const matchesSearch = 
+      offer.clientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      offer.reference.toLowerCase().includes(searchTerm.toLowerCase());
     
-    return matchesSearch && matchesFilter;
+    const matchesStatus = filterStatus === "Tous" || offer.status === filterStatus;
+    const matchesDirection = filterDirection === "Tous" || offer.direction === filterDirection.toLowerCase();
+    
+    // Date filter logic
+    if (filterDateRange !== "all") {
+      const date = new Date(offer.createdAt);
+      const now = new Date();
+      if (filterDateRange === "today") {
+        if (date.toDateString() !== now.toDateString()) return false;
+      }
+      if (filterDateRange === "week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        if (date < weekAgo) return false;
+      }
+      if (filterDateRange === "month") {
+        if (date.getMonth() !== now.getMonth() || date.getFullYear() !== now.getFullYear()) return false;
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesDirection;
   });
 
   return (
@@ -54,30 +115,64 @@ export default function TrackingPage() {
         </div>
       </header>
 
-      <div className="controls-bar">
-        <div className="search-wrapper">
-          <Search size={18} className="search-icon" />
+      <div className="tab-control">
+        <div className="search-bar-primary">
+          <Search size={18} className="icon" />
           <input 
             type="text" 
-            placeholder="Rechercher par client ou référence..." 
+            placeholder="Rechercher un client, une référence..." 
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
-        </div>
-        
-        <div className="filter-wrapper">
-          <Filter size={18} className="filter-icon" />
-          <select 
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+          <button 
+            className={clsx("btn-filter-toggle", isFilterPanelOpen && "active")}
+            onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
           >
-            <option value="Tous">Tous les statuts</option>
-            <option value="En Cours">En Cours</option>
-            <option value="Acceptée">Acceptée</option>
-            <option value="Révisée">Révisée</option>
-            <option value="Refusée">Refusée</option>
-          </select>
+            <Filter size={18} />
+            Filtres
+          </button>
         </div>
+
+        <AnimatePresence>
+          {isFilterPanelOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="filter-panel"
+            >
+              <div className="filter-grid">
+                <div className="filter-item">
+                  <label><Clock size={14} /> Statut</label>
+                  <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                    <option value="Tous">Tous</option>
+                    <option value="Draft">Brouillon</option>
+                    <option value="Sent">Envoyée</option>
+                    <option value="Accepted">Acceptée</option>
+                    <option value="Rejected">Refusée</option>
+                  </select>
+                </div>
+                <div className="filter-item">
+                  <label><ArrowRightLeft size={14} /> Flux</label>
+                  <select value={filterDirection} onChange={e => setFilterDirection(e.target.value)}>
+                    <option value="Tous">Tous</option>
+                    <option value="import">Import</option>
+                    <option value="export">Export</option>
+                  </select>
+                </div>
+                <div className="filter-item">
+                  <label><Calendar size={14} /> Date</label>
+                  <select value={filterDateRange} onChange={e => setFilterDateRange(e.target.value)}>
+                    <option value="all">Toutes les dates</option>
+                    <option value="today">Aujourd'hui</option>
+                    <option value="week">7 derniers jours</option>
+                    <option value="month">Ce mois-ci</option>
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="table-card">
@@ -104,31 +199,40 @@ export default function TrackingPage() {
                   transition={{ delay: i * 0.05 }}
                   className="table-row"
                 >
-                  <td><span className="ref-tag">{offer.id}</span></td>
-                  <td className="font-semibold">{offer.client}</td>
-                  <td>{offer.route}</td>
-                  <td className="text-dim">{offer.date}</td>
+                  <td><span className="ref-tag">{offer.reference}</span></td>
+                  <td className="font-semibold">{offer.clientName}</td>
+                  <td>
+                    <div className="route-cell">
+                      <span>{offer.origin}</span>
+                      <ChevronDown size={12} className="-rotate-90 text-muted" />
+                      <span>{offer.destination}</span>
+                    </div>
+                  </td>
+                  <td className="text-dim">
+                    {format(new Date(offer.createdAt), "dd MMM yyyy", { locale: fr })}
+                  </td>
                   <td className="right font-bold text-primary">
-                    {offer.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} €
+                    {offer.totalFinal.toLocaleString('fr-FR')} €
                   </td>
                   <td>
-                    <div className={clsx("status-badge", offer.status.toLowerCase().replace(" ", "-"))}>
-                      {getStatusIcon(offer.status)}
-                      <span>{offer.status}</span>
-                    </div>
+                    <select 
+                      className={clsx("status-select", offer.status.toLowerCase())}
+                      value={offer.status}
+                      onChange={e => handleStatusChange(offer.id, e.target.value)}
+                    >
+                      <option value="Draft">Brouillon</option>
+                      <option value="Sent">Envoyée</option>
+                      <option value="Accepted">Acceptée</option>
+                      <option value="Rejected">Refusée</option>
+                    </select>
                   </td>
                   <td className="actions-cell">
-                    <button className="action-btn" title="Télécharger PDF">
+                    <button className="action-btn" title="Télécharger PDF" onClick={() => handleDownload(offer)}>
                       <FileText size={16} />
                     </button>
-                    <button className="action-btn" title="Envoyer par email">
-                      <Mail size={16} />
+                    <button className="action-btn delete" title="Supprimer" onClick={() => handleDelete(offer.id)}>
+                      <Trash2 size={16} />
                     </button>
-                    <div className="dropdown-trigger">
-                      <button className="action-btn">
-                        <MoreVertical size={16} />
-                      </button>
-                    </div>
                   </td>
                 </motion.tr>
               ))}
@@ -136,11 +240,13 @@ export default function TrackingPage() {
           </tbody>
         </table>
         
-        {filteredOffers.length === 0 && (
+        {loading ? (
+          <div className="loading-state">Chargement des données...</div>
+        ) : filteredOffers.length === 0 && (
           <div className="empty-results">
             <Search size={40} className="text-muted mb-4" />
             <h3>Aucune offre trouvée</h3>
-            <p>Essayez de modifier vos filtres de recherche.</p>
+            <p>Essayez de modifier vos filtres ou de créer une nouvelle cotation.</p>
           </div>
         )}
       </div>
@@ -310,48 +416,120 @@ export default function TrackingPage() {
         .status-badge.acceptée { background: rgba(16, 185, 129, 0.1); color: #10b981; }
         .status-badge.en-cours { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
         .status-badge.révisée { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
-        .status-badge.refusée { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-batch.refusée { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .actions-cell {
-          display: flex;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .action-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-dim);
-          background: rgba(255, 255, 255, 0.03);
+        .status-select {
+          appearance: none;
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--border-surface);
-          transition: var(--transition-smooth);
-        }
-
-        .action-btn:hover {
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
           color: var(--text-main);
-          background: rgba(255, 255, 255, 0.08);
-          border-color: var(--border-highlight);
+          cursor: pointer;
         }
 
-        .empty-results {
-          padding: 60px 20px;
+        .status-select.accepted { color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        .status-select.rejected { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .status-select.draft { color: var(--text-muted); }
+
+        .loading-state {
+          padding: 60px;
           text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+          color: var(--primary);
+          font-weight: 600;
         }
 
-        .empty-results h3 {
-          font-size: 18px;
+        .tab-control {
+          margin-bottom: 24px;
+        }
+
+        .search-bar-primary {
+          display: flex;
+          gap: 12px;
+          background: var(--bg-surface);
+          padding: 8px;
+          border-radius: 16px;
+          border: 1px solid var(--border-surface);
+        }
+
+        .search-bar-primary .icon {
+          margin-left: 12px;
+          align-self: center;
+          color: var(--text-muted);
+        }
+
+        .search-bar-primary input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          padding: 10px;
+          color: var(--text-main);
+          font-size: 15px;
+        }
+
+        .btn-filter-toggle {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-main);
+          font-weight: 600;
+          transition: 0.2s;
+        }
+
+        .btn-filter-toggle.active {
+          background: var(--primary);
+          color: white;
+        }
+
+        .filter-panel {
+          margin-top: 12px;
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 16px;
+          padding: 20px;
+          border: 1px dashed var(--border-surface);
+        }
+
+        .filter-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 20px;
+        }
+
+        .filter-item label {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--text-muted);
           margin-bottom: 8px;
         }
-        
-        .empty-results p {
-          color: var(--text-dim);
+
+        .filter-item select {
+          width: 100%;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-surface);
+          padding: 8px;
+          border-radius: 8px;
+          color: var(--text-main);
+        }
+
+        .route-cell {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+        }
+
+        .action-btn.delete:hover {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.1);
         }
       `}</style>
     </div>

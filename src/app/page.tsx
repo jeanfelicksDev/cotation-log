@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -8,24 +8,54 @@ import {
   CheckCircle2, 
   Clock, 
   ArrowUpRight,
-  Plus
+  Plus,
+  ArrowRightLeft
 } from "lucide-react";
 import Link from "next/link";
-
-const stats = [
-  { label: "Offres Totales", value: "124", icon: TrendingUp, color: "#10b981", trend: "+12%" },
-  { label: "En Attente", value: "18", icon: Clock, color: "#f59e0b", trend: "-2%" },
-  { label: "Offres Gagnées", value: "86", icon: CheckCircle2, color: "#3b82f6", trend: "+5%" },
-  { label: "Nouveaux Clients", value: "12", icon: Users, color: "#8b5cf6", trend: "+8%" },
-];
-
-const recentQuotes = [
-  { id: "QT-2024-001", client: "Sodiam Sarl", route: "Anvers -> Dakar", amount: "2,450.00 €", status: "Acceptée" },
-  { id: "QT-2024-002", client: "Logistics Pro", route: "Le Havre -> Abidjan", amount: "3,120.00 €", status: "En Cours" },
-  { id: "QT-2024-003", client: "Africa Trade", route: "Valencia -> Lome", amount: "1,890.00 €", status: "Révisée" },
-];
+import { getQuotations } from "@/lib/actions";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default function Dashboard() {
+  const [data, setData] = useState<any[]>([]);
+  const [stats, setStats] = useState([
+    { label: "Offres Totales", value: "0", icon: TrendingUp, color: "#10b981", trend: "Actuel" },
+    { label: "En Attente", value: "0", icon: Clock, color: "#f59e0b", trend: "-%" },
+    { label: "Offres Gagnées", value: "0", icon: CheckCircle2, color: "#3b82f6", trend: "+%" },
+    { label: "Flux Import", value: "0", icon: ArrowRightLeft, color: "#8b5cf6", trend: "Flux" },
+  ]);
+  const [recentQuotes, setRecentQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const loadDashboard = async () => {
+    setLoading(true);
+    try {
+      const quotes = await getQuotations();
+      setData(quotes || []);
+      
+      const total = (quotes || []).length;
+      const pending = (quotes || []).filter(q => q.status === "Sent" || q.status === "Draft").length;
+      const won = (quotes || []).filter(q => q.status === "Accepted").length;
+      const imports = (quotes || []).filter(q => q.direction === "import").length;
+
+      setStats([
+        { label: "Offres Totales", value: total.toString(), icon: TrendingUp, color: "#10b981", trend: "Total" },
+        { label: "En Attente", value: pending.toString(), icon: Clock, color: "#f59e0b", trend: "Action" },
+        { label: "Offres Gagnées", value: won.toString(), icon: CheckCircle2, color: "#3b82f6", trend: "Fermées" },
+        { label: "Flux Import", value: imports.toString(), icon: ArrowRightLeft, color: "#8b5cf6", trend: "Auto" },
+      ]);
+
+      setRecentQuotes((quotes || []).slice(0, 5));
+    } catch (error) {
+      console.error("Dashboard error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="dashboard-container">
       <header className="page-header">
@@ -95,14 +125,18 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentQuotes.map((quote) => (
+                {loading ? (
+                  <tr><td colSpan={5} className="center">Chargement...</td></tr>
+                ) : recentQuotes.length === 0 ? (
+                  <tr><td colSpan={5} className="center">Aucune cotation récente.</td></tr>
+                ) : recentQuotes.map((quote) => (
                   <tr key={quote.id}>
-                    <td><span className="ref-tag">{quote.id}</span></td>
-                    <td>{quote.client}</td>
-                    <td>{quote.route}</td>
-                    <td className="amount">{quote.amount}</td>
+                    <td><span className="ref-tag">{quote.reference}</span></td>
+                    <td>{quote.clientName}</td>
+                    <td>{quote.origin} -> {quote.destination}</td>
+                    <td className="amount">{quote.totalFinal.toLocaleString('fr-FR')} €</td>
                     <td>
-                      <span className={`status-pill ${quote.status.toLowerCase().replace(" ", "-")}`}>
+                      <span className={`status-pill ${quote.status.toLowerCase()}`}>
                         {quote.status}
                       </span>
                     </td>
@@ -311,9 +345,10 @@ export default function Dashboard() {
           font-weight: 700;
         }
 
-        .status-pill.acceptée { background: rgba(16, 185, 129, 0.1); color: var(--primary); }
-        .status-pill.en-cours { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
-        .status-pill.révisée { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .status-pill.accepted { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-pill.sent { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .status-pill.draft { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .status-pill.rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
         .chart-placeholder {
           height: 200px;

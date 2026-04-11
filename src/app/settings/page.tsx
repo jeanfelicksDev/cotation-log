@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
@@ -11,40 +11,63 @@ import {
   Package, 
   Save,
   ChevronRight,
-  Search
+  Search,
+  DollarSign,
+  Truck,
+  CreditCard
 } from "lucide-react";
 import { clsx } from "clsx";
+import { 
+  getParameters, 
+  createParameter, 
+  deleteParameter, 
+  seedParameters 
+} from "@/lib/actions";
 
 type Parameter = {
   id: string;
-  category: "origin" | "destination" | "container" | "commodity";
+  category: "origin" | "destination" | "container" | "commodity" | "cost_type" | "currency" | "mode";
   label: string;
 };
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Parameter["category"]>("destination");
-  const [params, setParams] = useState<Parameter[]>([
-    { id: "1", category: "destination", label: "Lomé (TGLFW)" },
-    { id: "2", category: "destination", label: "Abidjan (CIABJ)" },
-    { id: "3", category: "container", label: "20' Dry Standard" },
-    { id: "4", category: "container", label: "40' High Cube" },
-    { id: "5", category: "commodity", label: "Marchandises Générales" },
-  ]);
+  const [params, setParams] = useState<Parameter[]>([]);
   const [newValue, setNewValue] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const addParam = () => {
-    if (!newValue) return;
-    const newItem: Parameter = {
-      id: Math.random().toString(36).substr(2, 9),
-      category: activeTab,
-      label: newValue
-    };
-    setParams([...params, newItem]);
-    setNewValue("");
+  useEffect(() => {
+    initSettings();
+  }, []);
+
+  const initSettings = async () => {
+    setLoading(true);
+    await seedParameters();
+    const data = await getParameters();
+    // @ts-ignore - map fields from DB model if necessary
+    setParams(data);
+    setLoading(false);
   };
 
-  const removeParam = (id: string) => {
-    setParams(params.filter(p => p.id !== id));
+  const addParam = async () => {
+    if (!newValue) return;
+    try {
+      const created = await createParameter(activeTab, newValue);
+      // @ts-ignore
+      setParams([...params, created]);
+      setNewValue("");
+    } catch (error) {
+      alert("Erreur lors de l'ajout.");
+    }
+  };
+
+  const removeParam = async (id: string) => {
+    try {
+      await deleteParameter(id);
+      setParams(params.filter(p => p.id !== id));
+    } catch (error) {
+      alert("Erreur lors de la suppression.");
+    }
   };
 
   const filteredParams = params.filter(p => p.category === activeTab);
@@ -86,14 +109,37 @@ export default function SettingsPage() {
           >
             <Package size={18} /> Marchandises
           </button>
+          <button 
+            className={clsx("nav-item", activeTab === "cost_type" && "active")}
+            onClick={() => setActiveTab("cost_type")}
+          >
+            <CreditCard size={18} /> Types de Frais
+          </button>
+          <button 
+            className={clsx("nav-item", activeTab === "currency" && "active")}
+            onClick={() => setActiveTab("currency")}
+          >
+            <DollarSign size={18} /> Devises
+          </button>
+          <button 
+            className={clsx("nav-item", activeTab === "mode" && "active")}
+            onClick={() => setActiveTab("mode")}
+          >
+            <Truck size={18} /> Modes de Transport
+          </button>
         </aside>
 
         <main className="settings-main">
           <div className="content-card">
             <div className="card-header">
-              <h2>{activeTab === "origin" ? "Points d'Origine" : 
-                   activeTab === "destination" ? "Destinations" :
-                   activeTab === "container" ? "Types de Conteneurs" : "Marchandises"}</h2>
+              <h2>{
+                activeTab === "origin" ? "Points d'Origine" : 
+                activeTab === "destination" ? "Destinations" :
+                activeTab === "container" ? "Types de Conteneurs" : 
+                activeTab === "commodity" ? "Marchandises" :
+                activeTab === "cost_type" ? "Types de Frais" :
+                activeTab === "currency" ? "Devises" : "Modes de Transport"
+              }</h2>
               <p>Ajoutez ou modifiez les options disponibles dans le formulaire de cotation.</p>
             </div>
 
@@ -111,39 +157,41 @@ export default function SettingsPage() {
             </div>
 
             <div className="params-list">
-              <AnimatePresence mode="popLayout">
-                {filteredParams.length === 0 ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="empty-state"
-                  >
-                    Aucun paramètre défini pour cette catégorie.
-                  </motion.div>
-                ) : (
-                  filteredParams.map((p) => (
+              {loading ? (
+                <div className="loading-state">Initialisation des données...</div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {filteredParams.length === 0 ? (
                     <motion.div 
-                      key={p.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="param-item"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="empty-state"
                     >
-                      <span>{p.label}</span>
-                      <button className="btn-delete" onClick={() => removeParam(p.id)}>
-                        <Trash2 size={16} />
-                      </button>
+                      Aucun paramètre défini pour cette catégorie.
                     </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
+                  ) : (
+                    filteredParams.map((p) => (
+                      <motion.div 
+                        key={p.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="param-item"
+                      >
+                        <span>{p.label}</span>
+                        <button className="btn-delete" onClick={() => removeParam(p.id)}>
+                          <Trash2 size={16} />
+                        </button>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              )}
             </div>
 
             <div className="card-footer">
-              <button className="btn-save">
-                <Save size={18} /> Enregistrer les changements
-              </button>
+              <p className="footer-info">Les changements sont appliqués instantanément.</p>
             </div>
           </div>
         </main>
@@ -316,6 +364,19 @@ export default function SettingsPage() {
           text-align: center;
           padding: 40px;
           color: var(--text-muted);
+          font-style: italic;
+        }
+
+        .loading-state {
+          text-align: center;
+          padding: 40px;
+          color: var(--primary);
+          font-weight: 600;
+        }
+
+        .footer-info {
+          font-size: 12px;
+          color: var(--text-dim);
           font-style: italic;
         }
 
