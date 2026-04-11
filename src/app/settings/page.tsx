@@ -310,6 +310,24 @@ export default function SettingsPage() {
           flex-direction: column;
           gap: 8px;
           min-height: 200px;
+          max-height: calc(5 * (48px + 8px));
+          overflow-y: auto;
+          padding-right: 4px;
+          scrollbar-width: thin;
+          scrollbar-color: var(--primary) rgba(255,255,255,0.05);
+        }
+
+        .params-list::-webkit-scrollbar {
+          width: 5px;
+        }
+        .params-list::-webkit-scrollbar-track {
+          background: rgba(255,255,255,0.04);
+          border-radius: 10px;
+        }
+        .params-list::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 10px;
+          opacity: 0.7;
         }
 
         .param-item {
