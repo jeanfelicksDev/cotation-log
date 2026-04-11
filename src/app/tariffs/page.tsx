@@ -234,8 +234,11 @@ export default function TariffsPage() {
 
   if (!isLoaded) return null;
 
+  const themeColor = activeTab === "maison" ? "#10b981" : "#a855f7";
+  const themeGlow = activeTab === "maison" ? "rgba(16, 185, 129, 0.4)" : "rgba(168, 85, 247, 0.4)";
+
   return (
-    <div className="tariffs-container">
+    <div className="tariffs-container" style={{ ["--theme-color" as any]: themeColor, ["--theme-glow" as any]: themeGlow }}>
       <header className="page-header">
         <div>
           <h1 className="page-title">Grilles Tarifaires</h1>
@@ -538,7 +541,7 @@ export default function TariffsPage() {
         }
 
         .btn-primary {
-          background: var(--primary);
+          background: var(--theme-color);
           color: white;
           padding: 12px 24px;
           border-radius: 14px;
@@ -546,7 +549,13 @@ export default function TariffsPage() {
           display: flex;
           align-items: center;
           gap: 10px;
-          box-shadow: 0 4px 15px var(--primary-glow);
+          box-shadow: 0 4px 15px var(--theme-glow);
+          transition: var(--transition-smooth);
+        }
+
+        .btn-primary:hover {
+          filter: brightness(1.1);
+          transform: translateY(-2px);
         }
 
         /* Tabs Styles */
@@ -576,7 +585,7 @@ export default function TariffsPage() {
         }
 
         .tab-btn.active {
-          color: var(--primary);
+          color: var(--theme-color);
           font-weight: 600;
         }
 
@@ -586,8 +595,8 @@ export default function TariffsPage() {
           left: 0;
           right: 0;
           height: 2px;
-          background: var(--primary);
-          box-shadow: 0 -2px 10px var(--primary-glow);
+          background: var(--theme-color);
+          box-shadow: 0 -2px 10px var(--theme-glow);
         }
 
         .search-bar {
@@ -632,7 +641,7 @@ export default function TariffsPage() {
         }
 
         .tariff-card:hover {
-          border-color: var(--border-highlight);
+          border-color: var(--theme-color);
           background: rgba(255, 255, 255, 0.02);
           transform: translateY(-2px);
         }
@@ -660,7 +669,7 @@ export default function TariffsPage() {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 1px;
-          color: var(--primary);
+          color: var(--theme-color);
           font-weight: 700;
           margin-bottom: 4px;
         }
@@ -679,8 +688,8 @@ export default function TariffsPage() {
         .tariff-amount {
           font-size: 24px;
           font-weight: 800;
-          color: var(--primary);
-          text-shadow: 0 0 20px var(--primary-glow);
+          color: var(--theme-color);
+          text-shadow: 0 0 20px var(--theme-glow);
         }
 
         .tariff-actions {
@@ -813,9 +822,9 @@ export default function TariffsPage() {
           padding: 14px;
           border-radius: 14px;
           font-weight: 600;
-          background: var(--primary);
+          background: var(--theme-color);
           color: white;
-          box-shadow: 0 4px 15px var(--primary-glow);
+          box-shadow: 0 4px 15px var(--theme-glow);
         }
 
         /* Shared Utils */
@@ -834,7 +843,7 @@ export default function TariffsPage() {
         .text-lg { font-size: 18px; }
         .text-sm { font-size: 14px; }
         .text-xs { font-size: 12px; }
-        .text-primary { color: var(--primary); }
+        .text-primary { color: var(--theme-color); }
         .text-gray-400 { color: #9ca3af; }
         .text-gray-500 { color: #6b7280; }
         .text-red-400 { color: #f87171; }
