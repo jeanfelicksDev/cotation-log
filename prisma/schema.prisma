@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Quotation {
+  id          String   @id @default(cuid())
+  reference   String   @unique
+  clientName  String
+  direction   String   // "import" or "export"
+  status      String   @default("Draft") // "Draft", "Sent", "Accepted", "Rejected"
+  
+  // New logistical parameters
+  origin      String?
+  destination String?
+  commodity   String?
+  
+  totalBase   Float
+  totalFinal  Float
+  margin      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  items       QuotationItem[]
+  containers  QuotationContainer[]
+}
+
+model QuotationContainer {
+  id          String    @id @default(cuid())
+  type        String    // ex: "20GP", "40HC"
+  quantity    Int       @default(1)
+  
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+}
+
+model QuotationItem {
+  id          String    @id @default(cuid())
+  description String
+  amount      Float
+  type        String    // "fret", "fret_air", "thc", "doc", "other"
+  currency    String    @default("EUR")
+  
+  // Fret Forwarding options
+  isForwarding Boolean  @default(false)
+  buyAmount    Float?
+  marginRate   Float?
+  
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+}
+
+model Parameter {
+  id        String   @id @default(cuid())
+  category  String   // "destination", "origin", "container", "commodity"
+  label     String
+  value     String
+  createdAt DateTime @default(now())
+}
+
+model Tariff {
+  id          String   @id @default(cuid())
+  zone        String
+  description String
+  amount      Float
+  currency    String   @default("EUR")
+  type        String
+}
