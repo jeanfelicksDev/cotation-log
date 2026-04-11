@@ -289,34 +289,33 @@ export default function TariffsPage() {
         </div>
       </div>
 
-      <div className="search-row">
-        <div className="search-bar">
-          <Search size={18} className="search-icon" />
-          <input 
-            type="text" 
-            placeholder={activeTab === "maison" ? "Rechercher une zone, description..." : "Rechercher un transporteur, port..."}
-            value={activeTab === "maison" ? maisonSearch : forwarderSearch}
-            onChange={e => activeTab === "maison" ? setMaisonSearch(e.target.value) : setForwarderSearch(e.target.value)}
-          />
-        </div>
-        <button 
-          className="btn-primary" 
-          onClick={activeTab === "maison" ? openAddMaison : openAddForwarder}
-        >
-          <Plus size={18} />
-          <span>{activeTab === "maison" ? "Nouveau Tarif Maison" : "Nouveau Tarif Armateur"}</span>
-        </button>
-      </div>
 
       <AnimatePresence mode="wait">
         {activeTab === "maison" ? (
-          <motion.div 
+          <motion.div
             key="maison-content"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className="tab-panel"
           >
+            {/* Search + Add button for Maison */}
+            <div className="search-row">
+              <div className="search-bar">
+                <Search size={18} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Rechercher une zone, description..."
+                  value={maisonSearch}
+                  onChange={e => setMaisonSearch(e.target.value)}
+                />
+              </div>
+              <button className="btn-primary btn-maison" onClick={openAddMaison}>
+                <Plus size={18} />
+                <span>Nouveau Tarif Maison</span>
+              </button>
+            </div>
+
             <div className="tariffs-grid">
               {maisonLoading ? (
                 <div className="loading-state">Chargement des tarifs maison...</div>
@@ -354,13 +353,30 @@ export default function TariffsPage() {
             </div>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             key="forwarder-content"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="tab-panel"
           >
+            {/* Search + Add button for Forwarder */}
+            <div className="search-row">
+              <div className="search-bar">
+                <Search size={18} className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un transporteur, port..."
+                  value={forwarderSearch}
+                  onChange={e => setForwarderSearch(e.target.value)}
+                />
+              </div>
+              <button className="btn-primary btn-forwarder" onClick={openAddForwarder}>
+                <Plus size={18} />
+                <span>Nouveau Tarif Armateur</span>
+              </button>
+            </div>
+
             <div className="tariffs-grid">
               {forwarderLoading ? (
                 <div className="loading-state">Chargement des tarifs armateurs...</div>
@@ -417,6 +433,7 @@ export default function TariffsPage() {
         )}
       </AnimatePresence>
 
+
       {/* Modal rendered via Portal into document.body to avoid CSS context issues */}
       <TariffModal
         activeModal={activeModal}
@@ -457,23 +474,7 @@ export default function TariffsPage() {
           color: var(--text-dim);
         }
 
-        .btn-primary {
-          background: var(--theme-color);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 14px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          box-shadow: 0 4px 15px var(--theme-glow);
-          transition: var(--transition-smooth);
-        }
 
-        .btn-primary:hover {
-          filter: brightness(1.1);
-          transform: translateY(-2px);
-        }
 
         /* Tabs Styles */
         .tabs-wrapper {
@@ -547,7 +548,6 @@ export default function TariffsPage() {
         }
 
         .btn-primary {
-          background: var(--theme-color);
           color: white;
           padding: 0 24px;
           border-radius: 14px;
@@ -556,9 +556,24 @@ export default function TariffsPage() {
           align-items: center;
           gap: 10px;
           height: 48px;
-          box-shadow: 0 4px 15px var(--theme-glow);
-          transition: var(--transition-smooth);
+          transition: all 0.2s ease;
           white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .btn-primary:hover {
+          filter: brightness(1.1);
+          transform: translateY(-2px);
+        }
+
+        .btn-maison {
+          background: #10b981;
+          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-forwarder {
+          background: #a855f7;
+          box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
         }
 
         .tariffs-grid {
