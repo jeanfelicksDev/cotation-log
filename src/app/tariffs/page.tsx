@@ -37,8 +37,7 @@ export default function TariffsPage() {
   // States for "Maison" Tariffs
   const [tariffs, setTariffs] = useState<any[]>([]);
   const [maisonSearch, setMaisonSearch] = useState("");
-  const [maisonLoading, setMaisonLoading] = useState(true);
-  const [isMaisonModalOpen, setIsMaisonModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<"maison" | "forwarder" | null>(null);
   const [editingTariff, setEditingTariff] = useState<any | null>(null);
   const [newTariff, setNewTariff] = useState({
     zone: "",
@@ -52,7 +51,6 @@ export default function TariffsPage() {
   const [rates, setRates] = useState<any[]>([]);
   const [forwarderSearch, setForwarderSearch] = useState("");
   const [forwarderLoading, setForwarderLoading] = useState(true);
-  const [isForwarderModalOpen, setIsForwarderModalOpen] = useState(false);
   const [editingRate, setEditingRate] = useState<any | null>(null);
   const [origins, setOrigins] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
@@ -79,14 +77,23 @@ export default function TariffsPage() {
     initAll();
   }, []);
 
-  // Save active tab to localStorage
+  // Reset modal when switching tabs
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("activeTariffTab", activeTab);
-    }
-  }, [activeTab, isLoaded]);
+    setActiveModal(null);
+  }, [activeTab]);
 
-  const initAll = async () => {
+  // Body scroll lock
+  useEffect(() => {
+    if (activeModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [activeModal]);
+
+  // Load active tab from localStorage
+  useEffect(() => {
     // Both are loaded to ensure smooth tab switching
     await Promise.all([initMaison(), initForwarder()]);
   };
@@ -116,7 +123,7 @@ export default function TariffsPage() {
   const openAddMaison = () => {
     setEditingTariff(null);
     setNewTariff({ zone: "", description: "", amount: "", type: "Fret", currency: "EUR" });
-    setIsMaisonModalOpen(true);
+    setActiveModal("maison");
   };
 
   const openEditMaison = (tariff: any) => {
@@ -128,7 +135,7 @@ export default function TariffsPage() {
       type: tariff.type,
       currency: tariff.currency,
     });
-    setIsMaisonModalOpen(true);
+    setActiveModal("maison");
   };
 
   const handleSubmitMaison = async (e: React.FormEvent) => {
@@ -147,7 +154,7 @@ export default function TariffsPage() {
         });
         setTariffs([...tariffs, created]);
       }
-      setIsMaisonModalOpen(false);
+      setActiveModal(null);
     } catch (err) {
       alert("Erreur lors de l'opération.");
     }
@@ -158,7 +165,6 @@ export default function TariffsPage() {
     await deleteTariff(id);
     setTariffs(tariffs.filter(t => t.id !== id));
   };
-
   // --- FORWARDER CRUD ---
   const openAddForwarder = () => {
     setEditingRate(null);
@@ -173,7 +179,7 @@ export default function TariffsPage() {
       validFrom: new Date().toISOString().split('T')[0],
       validTo: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
     });
-    setIsForwarderModalOpen(true);
+    setActiveModal("forwarder");
   };
 
   const openEditForwarder = (rate: any) => {
@@ -189,7 +195,7 @@ export default function TariffsPage() {
       validFrom: new Date(rate.validFrom).toISOString().split('T')[0],
       validTo: new Date(rate.validTo).toISOString().split('T')[0]
     });
-    setIsForwarderModalOpen(true);
+    setActiveModal("forwarder");
   };
 
   const handleSubmitForwarder = async (e: React.FormEvent) => {
@@ -208,7 +214,7 @@ export default function TariffsPage() {
         const created = await createFreightRate(payload);
         setRates([created, ...rates]);
       }
-      setIsForwarderModalOpen(false);
+      setActiveModal(null);
     } catch (err) {
       alert("Erreur lors de l'opération.");
     }
@@ -244,13 +250,6 @@ export default function TariffsPage() {
           <h1 className="page-title">Grilles Tarifaires</h1>
           <p className="page-subtitle">Visualisez et gérez vos catalogues de prix logistiques.</p>
         </div>
-        <button 
-          className="btn-primary" 
-          onClick={activeTab === "maison" ? openAddMaison : openAddForwarder}
-        >
-          <Plus size={18} />
-          <span>{activeTab === "maison" ? "Nouveau Tarif Maison" : "Nouveau Tarif Armateur"}</span>
-        </button>
       </header>
 
       {/* Tabs Switcher */}
@@ -275,14 +274,23 @@ export default function TariffsPage() {
         </div>
       </div>
 
-      <div className="search-bar">
-        <Search size={18} className="search-icon" />
-        <input 
-          type="text" 
-          placeholder={activeTab === "maison" ? "Rechercher une zone, description..." : "Rechercher un transporteur, port..."}
-          value={activeTab === "maison" ? maisonSearch : forwarderSearch}
-          onChange={e => activeTab === "maison" ? setMaisonSearch(e.target.value) : setForwarderSearch(e.target.value)}
-        />
+      <div className="search-row">
+        <div className="search-bar">
+          <Search size={18} className="search-icon" />
+          <input 
+            type="text" 
+            placeholder={activeTab === "maison" ? "Rechercher une zone, description..." : "Rechercher un transporteur, port..."}
+            value={activeTab === "maison" ? maisonSearch : forwarderSearch}
+            onChange={e => activeTab === "maison" ? setMaisonSearch(e.target.value) : setForwarderSearch(e.target.value)}
+          />
+        </div>
+        <button 
+          className="btn-primary" 
+          onClick={activeTab === "maison" ? openAddMaison : openAddForwarder}
+        >
+          <Plus size={18} />
+          <span>{activeTab === "maison" ? "Nouveau Tarif Maison" : "Nouveau Tarif Armateur"}</span>
+        </button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -394,124 +402,127 @@ export default function TariffsPage() {
         )}
       </AnimatePresence>
 
-      {/* --- MODALS --- */}
-      
-      {/* Maison Modal */}
+      {/* --- UNIFIED MODAL SYSTEM --- */}
       <AnimatePresence>
-        {isMaisonModalOpen && (
-          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="modal-content" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}>
+        {activeModal && (
+          <motion.div 
+            className="modal-overlay" 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="modal-content" 
+              initial={{ scale: 0.9, y: 20 }} 
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+            >
               <div className="modal-header">
-                <h2>{editingTariff ? "Modifier Tarif Maison" : "Nouveau Tarif Maison"}</h2>
-                <button onClick={() => setIsMaisonModalOpen(false)}><X size={20} /></button>
+                <h2>
+                  {activeModal === "maison" 
+                    ? (editingTariff ? "Modifier Tarif Maison" : "Nouveau Tarif Maison")
+                    : (editingRate ? "Modifier Tarif Armateur" : "Nouveau Tarif Armateur")
+                  }
+                </h2>
+                <button onClick={() => setActiveModal(null)}><X size={20} /></button>
               </div>
-              <form onSubmit={handleSubmitMaison}>
-                <div className="form-grid">
-                  <div className="input-group">
-                    <label>Zone / Destination</label>
-                    <input type="text" required value={newTariff.zone} onChange={e => setNewTariff({...newTariff, zone: e.target.value})} placeholder="ex: Europe, Asie..." />
-                  </div>
-                  <div className="input-group">
-                    <label>Type de tarif</label>
-                    <select value={newTariff.type} onChange={e => setNewTariff({...newTariff, type: e.target.value})}>
-                      <option value="Fret">Fret</option>
-                      <option value="THC">THC</option>
-                      <option value="Surestaries">Surestaries</option>
-                      <option value="Autre">Autre</option>
-                    </select>
-                  </div>
-                  <div className="input-group full-width">
-                    <label>Description détaillée</label>
-                    <input type="text" required value={newTariff.description} onChange={e => setNewTariff({...newTariff, description: e.target.value})} placeholder="Détails du service..." />
-                  </div>
-                  <div className="input-group">
-                    <label>Montant</label>
-                    <input type="number" required value={newTariff.amount} onChange={e => setNewTariff({...newTariff, amount: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Devise</label>
-                    <select value={newTariff.currency} onChange={e => setNewTariff({...newTariff, currency: e.target.value})}>
-                      <option value="EUR">Euro (€)</option>
-                      <option value="XOF">FCFA (CFA)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setIsMaisonModalOpen(false)}>Annuler</button>
-                  <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer" : "Créer"}</button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Forwarder Modal */}
-      <AnimatePresence>
-        {isForwarderModalOpen && (
-          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="modal-content" initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}>
-              <div className="modal-header">
-                <h2>{editingRate ? "Modifier Tarif Armateur" : "Nouveau Tarif Armateur"}</h2>
-                <button onClick={() => setIsForwarderModalOpen(false)}><X size={20} /></button>
-              </div>
-              <form onSubmit={handleSubmitForwarder}>
-                <div className="form-grid">
-                  <div className="input-group full-width">
-                    <label>Compagnie Maritime / Armateur</label>
-                    <input type="text" required value={newRate.carrier} onChange={e => setNewRate({...newRate, carrier: e.target.value})} />
+              {activeModal === "maison" ? (
+                <form onSubmit={handleSubmitMaison}>
+                  <div className="form-grid">
+                    <div className="input-group">
+                      <label>Zone / Destination</label>
+                      <input type="text" required value={newTariff.zone} onChange={e => setNewTariff({...newTariff, zone: e.target.value})} placeholder="ex: Europe, Asie..." />
+                    </div>
+                    <div className="input-group">
+                      <label>Type de tarif</label>
+                      <select value={newTariff.type} onChange={e => setNewTariff({...newTariff, type: e.target.value})}>
+                        <option value="Fret">Fret</option>
+                        <option value="THC">THC</option>
+                        <option value="Surestaries">Surestaries</option>
+                        <option value="Autre">Autre</option>
+                      </select>
+                    </div>
+                    <div className="input-group full-width">
+                      <label>Description détaillée</label>
+                      <input type="text" required value={newTariff.description} onChange={e => setNewTariff({...newTariff, description: e.target.value})} placeholder="Détails du service..." />
+                    </div>
+                    <div className="input-group">
+                      <label>Montant</label>
+                      <input type="number" required value={newTariff.amount} onChange={e => setNewTariff({...newTariff, amount: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Devise</label>
+                      <select value={newTariff.currency} onChange={e => setNewTariff({...newTariff, currency: e.target.value})}>
+                        <option value="EUR">Euro (€)</option>
+                        <option value="XOF">FCFA (CFA)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="input-group">
-                    <label>Port de Départ</label>
-                    <input type="text" list="origins-list" required value={newRate.origin} onChange={e => setNewRate({...newRate, origin: e.target.value})} />
-                    <datalist id="origins-list">
-                      {origins.map((o: any) => <option key={o.id} value={o.value}>{o.label}</option>)}
-                    </datalist>
+                  <div className="modal-footer">
+                    <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
+                    <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer" : "Créer"}</button>
                   </div>
-                  <div className="input-group">
-                    <label>Port d'Arrivée</label>
-                    <input type="text" list="dest-list" required value={newRate.destination} onChange={e => setNewRate({...newRate, destination: e.target.value})} />
-                    <datalist id="dest-list">
-                      {destinations.map((d: any) => <option key={d.id} value={d.value}>{d.label}</option>)}
-                    </datalist>
+                </form>
+              ) : (
+                <form onSubmit={handleSubmitForwarder}>
+                  <div className="form-grid">
+                    <div className="input-group full-width">
+                      <label>Compagnie Maritime / Armateur</label>
+                      <input type="text" required value={newRate.carrier} onChange={e => setNewRate({...newRate, carrier: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Port de Départ</label>
+                      <input type="text" list="origins-list" required value={newRate.origin} onChange={e => setNewRate({...newRate, origin: e.target.value})} />
+                      <datalist id="origins-list">
+                        {origins.map((o: any) => <option key={o.id} value={o.value}>{o.label}</option>)}
+                      </datalist>
+                    </div>
+                    <div className="input-group">
+                      <label>Port d'Arrivée</label>
+                      <input type="text" list="dest-list" required value={newRate.destination} onChange={e => setNewRate({...newRate, destination: e.target.value})} />
+                      <datalist id="dest-list">
+                        {destinations.map((d: any) => <option key={d.id} value={d.value}>{d.label}</option>)}
+                      </datalist>
+                    </div>
+                    <div className="input-group">
+                      <label>Type de Conteneur</label>
+                      <select required value={newRate.containerType} onChange={e => setNewRate({...newRate, containerType: e.target.value})}>
+                        <option value="">Sélectionner...</option>
+                        {containers.map((c: any) => <option key={c.id} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>Marchandise</label>
+                      <input type="text" required value={newRate.commodity} onChange={e => setNewRate({...newRate, commodity: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Démarrage Validité</label>
+                      <input type="date" required value={newRate.validFrom} onChange={e => setNewRate({...newRate, validFrom: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Fin Validité</label>
+                      <input type="date" required value={newRate.validTo} onChange={e => setNewRate({...newRate, validTo: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Montant (Achat)</label>
+                      <input type="number" step="0.01" required value={newRate.amount} onChange={e => setNewRate({...newRate, amount: e.target.value})} />
+                    </div>
+                    <div className="input-group">
+                      <label>Devise</label>
+                      <select value={newRate.currency} onChange={e => setNewRate({...newRate, currency: e.target.value})}>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="XOF">XOF (CFA)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="input-group">
-                    <label>Type de Conteneur</label>
-                    <select required value={newRate.containerType} onChange={e => setNewRate({...newRate, containerType: e.target.value})}>
-                      <option value="">Sélectionner...</option>
-                      {containers.map((c: any) => <option key={c.id} value={c.value}>{c.label}</option>)}
-                    </select>
+                  <div className="modal-footer">
+                    <button type="button" className="btn-cancel" onClick={() => setActiveModal(null)}>Annuler</button>
+                    <button type="submit" className="btn-submit">{editingRate ? "Modifier" : "Ajouter"}</button>
                   </div>
-                  <div className="input-group">
-                    <label>Marchandise</label>
-                    <input type="text" required value={newRate.commodity} onChange={e => setNewRate({...newRate, commodity: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Démarrage Validité</label>
-                    <input type="date" required value={newRate.validFrom} onChange={e => setNewRate({...newRate, validFrom: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Fin Validité</label>
-                    <input type="date" required value={newRate.validTo} onChange={e => setNewRate({...newRate, validTo: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Montant (Achat)</label>
-                    <input type="number" step="0.01" required value={newRate.amount} onChange={e => setNewRate({...newRate, amount: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>Devise</label>
-                    <select value={newRate.currency} onChange={e => setNewRate({...newRate, currency: e.target.value})}>
-                      <option value="EUR">EUR (€)</option>
-                      <option value="USD">USD ($)</option>
-                      <option value="XOF">XOF (CFA)</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setIsForwarderModalOpen(false)}>Annuler</button>
-                  <button type="submit" className="btn-submit">{editingRate ? "Modifier" : "Ajouter"}</button>
-                </div>
-              </form>
+                </form>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -599,9 +610,15 @@ export default function TariffsPage() {
           box-shadow: 0 -2px 10px var(--theme-glow);
         }
 
+        .search-row {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 32px;
+        }
+
         .search-bar {
           position: relative;
-          margin-bottom: 32px;
+          flex: 1;
         }
 
         .search-icon {
@@ -609,7 +626,7 @@ export default function TariffsPage() {
           left: 16px;
           top: 50%;
           transform: translateY(-50%);
-          color: var(--text-muted);
+          color: var(--text-dim);
         }
 
         .search-bar input {
@@ -620,6 +637,22 @@ export default function TariffsPage() {
           border-radius: 16px;
           color: var(--text-main);
           font-size: 15px;
+          height: 48px;
+        }
+
+        .btn-primary {
+          background: var(--theme-color);
+          color: white;
+          padding: 0 24px;
+          border-radius: 14px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          height: 48px;
+          box-shadow: 0 4px 15px var(--theme-glow);
+          transition: var(--transition-smooth);
+          white-space: nowrap;
         }
 
         .tariffs-grid {
