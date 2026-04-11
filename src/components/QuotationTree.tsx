@@ -93,7 +93,7 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
             
             {React.createElement(icon, { size: 16, className: "node-icon" })}
             <span className="node-label">{label}</span>
-            {count > 0 && <span className="node-count">{count}</span>}
+            {count > 0 && <span className="node-count">({count})</span>}
           </div>
         </div>
         
@@ -304,13 +304,11 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
         }
 
         .node-count {
-          font-size: 10px;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 2px 6px;
-          border-radius: 10px;
-          color: var(--text-muted);
-          font-weight: 600;
+          font-size: 11px;
+          color: #fbbf24; /* Warm amber color */
+          font-weight: 700;
           margin-left: 8px;
+          text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
         }
 
         .node-children {
