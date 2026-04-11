@@ -305,11 +305,12 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
 
         .node-count {
           font-size: 10px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(255, 255, 255, 0.1);
           padding: 2px 6px;
           border-radius: 10px;
           color: var(--text-muted);
           font-weight: 600;
+          margin-left: 8px;
         }
 
         .node-children {
