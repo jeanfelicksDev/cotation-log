@@ -76,9 +76,9 @@ export default function TariffsPage() {
     setForwarderLoading(true);
     const [ratesData, params] = await Promise.all([getFreightRates(), getParameters()]);
     setRates(ratesData);
-    setOrigins(params.filter((p: any) => p.category === "port_origin"));
-    setDestinations(params.filter((p: any) => p.category === "port_destination"));
-    setContainers(params.filter((p: any) => p.category === "container_type"));
+    setOrigins(params.filter((p: any) => p.category === "origin"));
+    setDestinations(params.filter((p: any) => p.category === "destination"));
+    setContainers(params.filter((p: any) => p.category === "container"));
     setForwarderLoading(false);
   }
 
