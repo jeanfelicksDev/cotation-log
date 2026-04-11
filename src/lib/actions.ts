@@ -127,6 +127,26 @@ export async function deleteTariff(id: string) {
   }
 }
 
+export async function updateTariff(id: string, data: { zone: string; description: string; amount: number; type: string; currency: string }) {
+  try {
+    const tariff = await prisma.tariff.update({
+      where: { id },
+      data: {
+        zone: data.zone,
+        description: data.description,
+        amount: data.amount,
+        type: data.type,
+        currency: data.currency,
+      }
+    });
+    revalidatePath("/tariffs");
+    return tariff;
+  } catch (error) {
+    console.error("Error updating tariff:", error);
+    throw error;
+  }
+}
+
 export async function seedTariffs() {
   const count = await prisma.tariff.count();
   if (count > 0) return;

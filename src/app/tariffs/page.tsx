@@ -7,6 +7,7 @@ import {
   getTariffs, 
   createTariff, 
   deleteTariff, 
+  updateTariff,
   seedTariffs 
 } from "@/lib/actions";
 
@@ -15,6 +16,7 @@ export default function TariffsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTariff, setEditingTariff] = useState<any | null>(null);
   const [newTariff, setNewTariff] = useState({
     zone: "",
     description: "",
@@ -35,18 +37,45 @@ export default function TariffsPage() {
     setLoading(false);
   };
 
-  const handleAddTariff = async (e: React.FormEvent) => {
+  const openAddModal = () => {
+    setEditingTariff(null);
+    setNewTariff({ zone: "", description: "", amount: "", type: "Fret", currency: "EUR" });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (tariff: any) => {
+    setEditingTariff(tariff);
+    setNewTariff({
+      zone: tariff.zone,
+      description: tariff.description,
+      amount: String(tariff.amount),
+      type: tariff.type,
+      currency: tariff.currency,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitTariff = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const created = await createTariff({
-        ...newTariff,
-        amount: parseFloat(newTariff.amount)
-      });
-      setTariffs([...tariffs, created]);
+      if (editingTariff) {
+        const updated = await updateTariff(editingTariff.id, {
+          ...newTariff,
+          amount: parseFloat(newTariff.amount)
+        });
+        setTariffs(tariffs.map(t => t.id === editingTariff.id ? updated : t));
+      } else {
+        const created = await createTariff({
+          ...newTariff,
+          amount: parseFloat(newTariff.amount)
+        });
+        setTariffs([...tariffs, created]);
+      }
       setIsModalOpen(false);
+      setEditingTariff(null);
       setNewTariff({ zone: "", description: "", amount: "", type: "Fret", currency: "EUR" });
     } catch (err) {
-      alert("Erreur lors de la création du tarif.");
+      alert(editingTariff ? "Erreur lors de la modification du tarif." : "Erreur lors de la création du tarif.");
     }
   };
 
@@ -72,7 +101,7 @@ export default function TariffsPage() {
           <h1 className="page-title">Grilles Tarifaires</h1>
           <p className="page-subtitle">Gérez vos tarifs standards pour automatiser les cotations.</p>
         </div>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button className="btn-primary" onClick={openAddModal}>
           <Plus size={18} />
           <span>Ajouter un Tarif</span>
         </button>
@@ -109,7 +138,7 @@ export default function TariffsPage() {
                 {tariff.amount.toLocaleString()} {tariff.currency === "XOF" ? "CFA" : tariff.currency === "USD" ? "$" : "€"}
               </div>
               <div className="tariff-actions">
-                <button className="icon-btn" onClick={() => alert("Edition en cours de développement")}>
+                <button className="icon-btn" onClick={() => openEditModal(tariff)}>
                   <Edit size={16} />
                 </button>
                 <button className="icon-btn delete" onClick={() => handleDelete(tariff.id)}>
@@ -138,10 +167,10 @@ export default function TariffsPage() {
               animate={{ scale: 1, y: 0 }}
             >
               <div className="modal-header">
-                <h2>Nouveau Tarif</h2>
-                <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+                <h2>{editingTariff ? "Modifier le Tarif" : "Nouveau Tarif"}</h2>
+                <button onClick={() => { setIsModalOpen(false); setEditingTariff(null); }}><X size={20} /></button>
               </div>
-              <form onSubmit={handleAddTariff}>
+              <form onSubmit={handleSubmitTariff}>
                 <div className="form-grid">
                   <div className="input-group">
                     <label>Zone / Trajet</label>
@@ -198,8 +227,8 @@ export default function TariffsPage() {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Annuler</button>
-                  <button type="submit" className="btn-submit">Valider le Tarif</button>
+                  <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setEditingTariff(null); }}>Annuler</button>
+                  <button type="submit" className="btn-submit">{editingTariff ? "Enregistrer les modifications" : "Valider le Tarif"}</button>
                 </div>
               </form>
             </motion.div>
