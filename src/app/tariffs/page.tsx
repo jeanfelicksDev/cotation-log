@@ -508,7 +508,7 @@ function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTari
   };
 
   return createPortal(
-    <div style={overlay} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div style={overlay}>
       <div style={box}>
         <div style={{ padding: "22px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{title}</h2>
