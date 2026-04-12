@@ -128,7 +128,7 @@ export default function Sidebar() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 56px;
+          gap: 18px;
         }
 
         .nav-item {
