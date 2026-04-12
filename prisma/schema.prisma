@@ -59,10 +59,18 @@ model QuotationItem {
 
 model Parameter {
   id        String   @id @default(cuid())
-  category  String   // "destination", "origin", "container", "commodity"
+  category  String   // "destination", "origin", "container", "commodity", "status"
   label     String
   value     String
   createdAt DateTime @default(now())
+  reasons   ParameterReason[]
+}
+
+model ParameterReason {
+  id          String    @id @default(cuid())
+  label       String
+  parameterId String
+  parameter   Parameter @relation(fields: [parameterId], references: [id], onDelete: Cascade)
 }
 
 model Tariff {

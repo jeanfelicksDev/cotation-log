@@ -13,6 +13,7 @@ export async function getParameters(category?: string) {
   try {
     const params = await prisma.parameter.findMany({
       where: category ? { category } : {},
+      include: { reasons: true },
       orderBy: { label: "asc" }
     });
     return params;
@@ -43,6 +44,28 @@ export async function deleteParameter(id: string) {
     return true;
   } catch (error) {
     console.error("Error deleting parameter:", error);
+    throw error;
+  }
+}
+
+export async function createReason(parameterId: string, label: string) {
+  try {
+    const reason = await prisma.parameterReason.create({
+      data: { parameterId, label }
+    });
+    return reason;
+  } catch (error) {
+    console.error("Error creating reason:", error);
+    throw error;
+  }
+}
+
+export async function deleteReason(id: string) {
+  try {
+    await prisma.parameterReason.delete({ where: { id } });
+    return true;
+  } catch (error) {
+    console.error("Error deleting reason:", error);
     throw error;
   }
 }

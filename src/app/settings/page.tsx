@@ -15,26 +15,31 @@ import {
   DollarSign,
   Truck,
   CreditCard,
-  Clock
+  Clock,
+  X
 } from "lucide-react";
 import { clsx } from "clsx";
 import { 
   getParameters, 
   createParameter, 
   deleteParameter, 
-  seedParameters 
+  seedParameters,
+  createReason,
+  deleteReason
 } from "@/lib/actions";
 
 type Parameter = {
   id: string;
   category: "origin" | "destination" | "container" | "commodity" | "cost_type" | "currency" | "mode" | "status";
   label: string;
+  reasons: { id: string; label: string }[];
 };
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Parameter["category"]>("destination");
   const [params, setParams] = useState<Parameter[]>([]);
   const [newValue, setNewValue] = useState("");
+  const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +72,37 @@ export default function SettingsPage() {
       await deleteParameter(id);
       setParams(params.filter(p => p.id !== id));
     } catch (error) {
+      alert("Erreur lors de la suppression.");
+    }
+  };
+  
+  const handleAddReason = async (paramId: string) => {
+    const val = reasonInputs[paramId] || "";
+    if (!val) return;
+    try {
+      const created = await createReason(paramId, val);
+      setParams(params.map(p => {
+        if (p.id === paramId) {
+          return { ...p, reasons: [...(p.reasons || []), created] };
+        }
+        return p;
+      }));
+      setReasonInputs({ ...reasonInputs, [paramId]: "" });
+    } catch (err) {
+      alert("Erreur lors de l'ajout de la raison.");
+    }
+  };
+
+  const handleRemoveReason = async (paramId: string, reasonId: string) => {
+    try {
+      await deleteReason(reasonId);
+      setParams(params.map(p => {
+        if (p.id === paramId) {
+          return { ...p, reasons: (p.reasons || []).filter(r => r.id !== reasonId) };
+        }
+        return p;
+      }));
+    } catch (err) {
       alert("Erreur lors de la suppression.");
     }
   };
@@ -185,12 +221,53 @@ export default function SettingsPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="param-item"
+                        className={clsx("param-card", activeTab === "status" && "with-details")}
                       >
-                        <span>{p.label}</span>
-                        <button className="btn-delete" onClick={() => removeParam(p.id)}>
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="param-main">
+                          <span className="param-label">{p.label}</span>
+                          <button className="btn-delete" onClick={() => removeParam(p.id)}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+
+                        {activeTab === "status" && (
+                          <div className="reasons-section">
+                            <div className="reasons-list">
+                              <AnimatePresence>
+                                {p.reasons?.map((r) => (
+                                  <motion.span 
+                                    key={r.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="reason-tag"
+                                  >
+                                    {r.label}
+                                    <button 
+                                      className="btn-remove-reason" 
+                                      onClick={() => handleRemoveReason(p.id, r.id)}
+                                    >
+                                      <X size={10} />
+                                    </button>
+                                  </motion.span>
+                                ))}
+                              </AnimatePresence>
+                              
+                              <div className="add-reason-inline">
+                                <input 
+                                  type="text" 
+                                  placeholder="Nouvelle raison..."
+                                  value={reasonInputs[p.id] || ""}
+                                  onChange={e => setReasonInputs({ ...reasonInputs, [p.id]: e.target.value })}
+                                  onKeyDown={e => e.key === "Enter" && handleAddReason(p.id)}
+                                />
+                                <button className="inline-add-btn" onClick={() => handleAddReason(p.id)}>
+                                  <Plus size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     ))
                   )}
@@ -338,20 +415,106 @@ export default function SettingsPage() {
           opacity: 0.7;
         }
 
-        .param-item {
+        .param-card {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 14px 20px;
+          flex-direction: column;
           background: rgba(255, 255, 255, 0.03);
           border: 1px solid var(--border-surface);
           border-radius: 14px;
           transition: var(--transition-smooth);
+          overflow: hidden;
         }
 
-        .param-item:hover {
+        .param-card:hover {
           border-color: var(--border-highlight);
           background: rgba(255, 255, 255, 0.05);
+        }
+
+        .param-main {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 14px 20px;
+        }
+
+        .param-label {
+          font-weight: 700;
+          color: var(--text-main);
+        }
+
+        .reasons-section {
+          padding: 0 20px 16px 20px;
+        }
+
+        .reasons-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          align-items: center;
+        }
+
+        .reason-tag {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(16, 185, 129, 0.1);
+          color: var(--primary);
+          padding: 4px 10px;
+          border-radius: 100px;
+          font-size: 11px;
+          font-weight: 600;
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-remove-reason {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2px;
+          border-radius: 50%;
+          color: var(--primary);
+          opacity: 0.6;
+          transition: 0.2s;
+        }
+
+        .btn-remove-reason:hover {
+          opacity: 1;
+          background: rgba(16, 185, 129, 0.2);
+        }
+
+        .add-reason-inline {
+          display: flex;
+          align-items: center;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 100px;
+          padding: 2px 2px 2px 10px;
+          border: 1px dashed var(--border-surface);
+        }
+
+        .add-reason-inline input {
+          background: transparent;
+          border: none;
+          padding: 2px 4px;
+          color: var(--text-main);
+          font-size: 11px;
+          width: 100px;
+          outline: none;
+        }
+
+        .inline-add-btn {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: 0.2s;
+        }
+
+        .inline-add-btn:hover {
+          transform: scale(1.1);
         }
 
         .btn-delete {
