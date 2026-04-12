@@ -1216,7 +1216,6 @@ function QuoteForm() {
         .detail-item label {
           display: block;
           margin-bottom: 4px;
-          color: #f59e0b;
         }
 
         .detail-item p {

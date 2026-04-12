@@ -76,7 +76,7 @@ button {
 }
 
 label {
-  color: var(--accent);
+  color: var(--text-dim);
   font-size: 13px;
   font-weight: 600;
 }
