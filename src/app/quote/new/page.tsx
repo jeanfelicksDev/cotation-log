@@ -730,7 +730,7 @@ function QuoteForm() {
                   </div>
 
                   <div className="detail-item">
-                    <label>Date de réponse du client</label>
+                    <label>Date Retour</label>
                     <input 
                       type="date"
                       className="client-date-input"
