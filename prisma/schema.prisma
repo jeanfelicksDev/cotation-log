@@ -95,3 +95,13 @@ model FreightRate {
   validTo       DateTime // Fin validité
   createdAt     DateTime @default(now())
 }
+
+model CompanyProfile {
+  id            String   @id @default("singleton")
+  corporateName String   @default("Ma Société")
+  address       String?
+  phone         String?
+  email         String?
+  logo          String?  @db.Text
+  updatedAt     DateTime @updatedAt
+}

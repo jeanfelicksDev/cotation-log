@@ -29,12 +29,14 @@ export default function Sidebar() {
 
   return (
     <div className="sidebar">
-      <div className="sidebar-logo">
-        <div className="logo-icon">
-          <TrendingUp size={24} color="#10b981" />
+      <Link href="/setup/company">
+        <div className="sidebar-logo">
+          <div className="logo-icon">
+            <TrendingUp size={24} color="#10b981" />
+          </div>
+          <span className="logo-text">Cota<span>Log</span></span>
         </div>
-        <span className="logo-text">Cota<span>Log</span></span>
-      </div>
+      </Link>
 
       <nav className="sidebar-nav">
         {navItems.map((item) => {

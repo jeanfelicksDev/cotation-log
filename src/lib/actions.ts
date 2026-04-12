@@ -420,3 +420,60 @@ export async function findMatchingFreightRate(origin: string, destination: strin
     return null;
   }
 }
+// --- COMPANY PROFILE ACTIONS ---
+
+export async function getCompanyProfile() {
+  try {
+    let profile = await prisma.companyProfile.findUnique({
+      where: { id: "singleton" }
+    });
+    
+    if (!profile) {
+      // Create default if doesn't exist
+      profile = await prisma.companyProfile.create({
+        data: {
+          id: "singleton",
+          corporateName: "Ma Société",
+          address: "Adresse de l'entreprise",
+          phone: "+228 00 00 00 00",
+          email: "contact@entreprise.com"
+        }
+      });
+    }
+    
+    return profile;
+  } catch (error) {
+    console.error("Error fetching company profile:", error);
+    return null;
+  }
+}
+
+export async function updateCompanyProfile(data: any) {
+  try {
+    const profile = await prisma.companyProfile.upsert({
+      where: { id: "singleton" },
+      update: {
+        corporateName: data.corporateName,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        logo: data.logo,
+      },
+      create: {
+        id: "singleton",
+        corporateName: data.corporateName,
+        address: data.address,
+        phone: data.phone,
+        email: data.email,
+        logo: data.logo,
+      }
+    });
+    revalidatePath("/setup/company");
+    revalidatePath("/tracking");
+    revalidatePath("/");
+    return profile;
+  } catch (error) {
+    console.error("Error updating company profile:", error);
+    throw error;
+  }
+}
