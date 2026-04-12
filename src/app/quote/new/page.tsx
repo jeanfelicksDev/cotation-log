@@ -59,6 +59,7 @@ function QuoteForm() {
   const [dbParams, setDbParams] = useState<Record<string, Parameter[]>>({});
   const [status, setStatus] = useState("Rate under negotiation");
   const [reason, setReason] = useState("");
+  const [comments, setComments] = useState("");
   const [saving, setSaving] = useState(false);
   const [suggestedRate, setSuggestedRate] = useState<any | null>(null);
   const router = useRouter();
@@ -97,6 +98,7 @@ function QuoteForm() {
       setCommodity(q.commodity || "");
       setStatus(q.status || "Rate under negotiation");
       setReason(q.reason || "");
+      setComments(q.comments || "");
       setMode("sea");
       setBaseCosts(q.items.map((i: any) => ({
         id: i.id,
@@ -211,6 +213,7 @@ function QuoteForm() {
         margin: totalWithMarge - totalBase,
         status,
         reason,
+        comments,
         items: baseCosts,
         containers
       };
@@ -694,6 +697,19 @@ function QuoteForm() {
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Conditional Comments for "Out Martket" */}
+                {(reason === "Out Market" || reason === "Out Martket") && (
+                  <div className="comments-section">
+                    <label className="comments-label">Détails / Commentaires (Précisez la raison)</label>
+                    <textarea
+                      className="comments-textarea"
+                      placeholder="Saisissez vos commentaires ici..."
+                      value={comments}
+                      onChange={e => setComments(e.target.value)}
+                    />
                   </div>
                 )}
 
@@ -1472,6 +1488,44 @@ function QuoteForm() {
           border-color: var(--primary);
           color: white;
           box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .comments-section {
+          margin-top: 16px;
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 16px;
+          border: 1px solid var(--border-surface);
+        }
+
+        .comments-label {
+          display: block;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          margin-bottom: 12px;
+          letter-spacing: 0.5px;
+        }
+
+        .comments-textarea {
+          width: 100%;
+          min-height: 80px;
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-surface);
+          border-radius: 12px;
+          padding: 12px;
+          color: var(--text-main);
+          font-size: 14px;
+          font-family: inherit;
+          resize: vertical;
+          transition: var(--transition-smooth);
+        }
+
+        .comments-textarea:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 10px var(--primary-glow);
         }
       `}</style>
     </div>
