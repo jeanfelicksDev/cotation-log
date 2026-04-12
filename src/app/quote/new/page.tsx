@@ -1445,6 +1445,8 @@ function QuoteForm() {
 
         .status-summary-select {
           flex: 1;
+          width: 100%;
+          min-width: 250px;
           padding: 8px 12px;
           border-radius: 12px;
           background: #000000;
