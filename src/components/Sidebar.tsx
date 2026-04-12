@@ -64,8 +64,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        {renderNavItem({ name: "Grilles Tarifaires", href: "/tariffs", icon: Layers, color: "#fb7185" })}
-        
         <Link href="/settings">
           <motion.div 
             whileHover={{ x: 5 }}
@@ -82,6 +80,9 @@ export default function Sidebar() {
             <div className="hover-glow" />
           </motion.div>
         </Link>
+
+        {renderNavItem({ name: "Grilles Tarifaires", href: "/tariffs", icon: Layers, color: "#fb7185" })}
+        
         <div className="divider" />
         <div className="user-profile">
           <div className="avatar">AD</div>
