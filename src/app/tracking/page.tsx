@@ -184,13 +184,15 @@ export default function TrackingPage() {
         {/* Contenu principal */}
 
       <div className="tab-control">
-          <Search size={18} className="icon" />
-          <input 
-            type="text" 
-            placeholder="Rechercher un client..." 
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+          <div className="search-bar-primary">
+            <Search size={18} className="icon" />
+            <input 
+              type="text" 
+              placeholder="Rechercher un client..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
           <button 
             className={clsx("btn-filter-toggle", isFilterPanelOpen && "active")}
             onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
@@ -612,11 +614,14 @@ export default function TrackingPage() {
         .gap-2 { gap: 8px; }
 
         .tab-control {
+          display: flex;
+          gap: 16px;
           margin-bottom: 24px;
         }
 
         .search-bar-primary {
           display: flex;
+          flex: 1;
           gap: 12px;
           background: var(--bg-surface);
           padding: 8px;
