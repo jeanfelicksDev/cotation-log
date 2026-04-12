@@ -215,7 +215,6 @@ export default function TrackingPage() {
         <table>
           <thead>
             <tr>
-              <th>Référence</th>
               <th>Client</th>
               <th>Trajet</th>
               <th>Date</th>
@@ -235,7 +234,6 @@ export default function TrackingPage() {
                   transition={{ delay: i * 0.05 }}
                   className="table-row"
                 >
-                  <td><span className="ref-tag">{offer.reference}</span></td>
                   <td className="font-semibold">{offer.clientName}</td>
                   <td>
                     <div className="route-cell">
