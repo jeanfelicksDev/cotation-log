@@ -1380,6 +1380,30 @@ function QuoteForm() {
           color: #10b981;
         }
 
+        .status-summary-select {
+          flex: 1;
+          padding: 8px 12px;
+          border-radius: 12px;
+          background: #000000;
+          border: 1px solid var(--border-surface);
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .status-summary-select option {
+          background: #000000;
+          color: #ffffff;
+        }
+
+        .status-summary-select:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 10px var(--primary-glow);
+        }
+
         .btn-apply-suggestion {
           background: #38bdf8;
           color: white;
