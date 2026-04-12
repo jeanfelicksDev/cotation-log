@@ -81,6 +81,11 @@ label {
   font-weight: 600;
 }
 
+select, option {
+  background-color: #000000;
+  color: #ffffff;
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
