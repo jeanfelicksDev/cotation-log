@@ -1202,15 +1202,15 @@ function QuoteForm() {
         .summary-header {
           display: flex;
           align-items: center;
-          gap: 16px;
-          margin-bottom: 32px;
+          gap: 12px;
+          margin-bottom: 10px;
         }
 
         .summary-details {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 24px;
-          margin-bottom: 32px;
+          gap: 10px;
+          margin-bottom: 10px;
         }
 
         .detail-item label {
