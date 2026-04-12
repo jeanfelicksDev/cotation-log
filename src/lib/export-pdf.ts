@@ -5,35 +5,36 @@ export async function generateQuotationPDF(data: any) {
   const doc = new jsPDF();
   const profile = await getCompanyProfile();
   
-  // Header
-  doc.setFillColor(16, 185, 129); // Emerald Green
-  doc.rect(0, 0, 210, 45, "F");
+  // Header (Background removed)
+  // doc.setFillColor(16, 185, 129); 
+  // doc.rect(0, 0, 210, 45, "F");
   
   if (profile?.logo) {
     try {
-      // Small cleanup: sometimes base64 includes data:image/png;base64,
       const format = profile.logo.split(';')[0].split('/')[1].toUpperCase() || "PNG";
-      doc.addImage(profile.logo, format, 20, 5, 25, 0); 
+      doc.addImage(profile.logo, format, 20, 10, 30, 0); 
     } catch (e) {
       console.error("PDF Logo Error:", e);
     }
   }
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
+  doc.setTextColor(17, 24, 39); // Deep dark blue/grey
+  doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("COTATION COMMERCIALE", profile?.logo ? 50 : 20, 25);
+  doc.text("COTATION COMMERCIALE", 190, 15, { align: "right" });
   
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(75, 85, 99); // Grey for secondary info
   if (profile) {
-    doc.text(profile.corporateName, 190, 15, { align: "right" });
-    doc.text(profile.address || "", 190, 20, { align: "right" });
-    doc.text(`${profile.phone || ""} | ${profile.email || ""}`, 190, 25, { align: "right" });
+    doc.text(profile.corporateName, 190, 25, { align: "right" });
+    doc.text(profile.address || "", 190, 31, { align: "right" });
+    doc.text(`${profile.phone || ""} | ${profile.email || ""}`, 190, 37, { align: "right" });
   }
 
   const dateFiltered = new Date().toLocaleDateString("fr-FR");
-  doc.text(`Date d'émission: ${dateFiltered}`, 190, 35, { align: "right" });
+  doc.setFontSize(8);
+  doc.text(`Date d'émission: ${dateFiltered}`, 190, 47, { align: "right" });
   
   // Client Info
   doc.setTextColor(50, 50, 50);
