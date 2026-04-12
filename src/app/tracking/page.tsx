@@ -325,7 +325,6 @@ export default function TrackingPage() {
           </button>
         )}
       </aside>
-    </div>
 
     <style jsx>{`
         .tracking-wrapper {
