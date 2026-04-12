@@ -432,7 +432,8 @@ export default function SettingsPage() {
 
         .param-main {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
+          gap: 12px;
           align-items: center;
           padding: 14px 20px;
         }
