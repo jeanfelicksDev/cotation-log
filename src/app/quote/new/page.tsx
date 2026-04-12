@@ -248,7 +248,7 @@ function QuoteForm() {
               className="step-container"
             >
               <div className="form-section">
-                <h3>Détails du Client</h3>
+                <h3 className="section-title client">Détails du Client</h3>
                 <div className="input-group">
                   <label>Nom du Client / Société</label>
                   <input 
@@ -313,7 +313,7 @@ function QuoteForm() {
               </div>
 
               <div className="form-section">
-                <h3>Itinéraire & Marchandise</h3>
+                <h3 className="section-title travel">Itinéraire & Marchandise</h3>
                 <div className="grid-2">
                   <div className="input-group">
                     <label><MapPin size={14} /> Origine (Port/Aéroport)</label>
@@ -359,7 +359,7 @@ function QuoteForm() {
 
               <div className="form-section">
                 <div className="section-header">
-                  <h3>Équipement (Conteneurs)</h3>
+                  <h3 className="section-title equipment">Équipement (Conteneurs)</h3>
                   <button 
                     className="btn-add-small"
                     onClick={() => setContainers([...containers, { id: Math.random().toString(), type: "40HC", quantity: 1 }])}
@@ -1349,6 +1349,32 @@ function QuoteForm() {
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
         }
+        .section-title {
+          font-size: 18px;
+          margin-bottom: 16px;
+          font-weight: 700;
+          padding-left: 12px;
+          border-left: 3px solid transparent;
+        }
+
+        .section-title.client {
+          color: #f59e0b;
+          border-left-color: #f59e0b;
+          text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .section-title.travel {
+          color: #e879f9;
+          border-left-color: #e879f9;
+          text-shadow: 0 0 10px rgba(232, 121, 249, 0.3);
+        }
+
+        .section-title.equipment {
+          color: #fb7185;
+          border-left-color: #fb7185;
+          text-shadow: 0 0 10px rgba(251, 113, 133, 0.3);
+        }
+
         .status-summary-select {
           width: 100%;
           background: rgba(255, 255, 255, 0.05);
