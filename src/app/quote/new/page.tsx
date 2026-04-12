@@ -778,7 +778,10 @@ function QuoteForm() {
                       destination,
                       commodity,
                       containers,
-                      items: baseCosts,
+                      items: baseCosts.map(item => ({
+                        ...item,
+                        amount: item.isForwarding ? item.amount : item.amount * (1 + marge / 100)
+                      })),
                       totalFinal: totalWithMarge
                     })}
                   >
