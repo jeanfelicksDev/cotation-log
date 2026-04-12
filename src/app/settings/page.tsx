@@ -436,7 +436,7 @@ export default function SettingsPage() {
         .params-list {
           display: flex;
           flex-direction: column;
-          gap: 0.5cm;
+          gap: 2px;
           min-height: 200px;
           max-height: 400px;
           overflow-y: auto;
@@ -461,9 +461,9 @@ export default function SettingsPage() {
         .param-card {
           display: flex;
           flex-direction: column;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid var(--border-surface);
-          border-radius: 14px;
+          background: transparent;
+          border: none;
+          border-radius: 0;
           transition: var(--transition-smooth);
           overflow: hidden;
         }
@@ -478,7 +478,7 @@ export default function SettingsPage() {
           justify-content: flex-start;
           gap: 12px;
           align-items: center;
-          padding: 6px 12px;
+          padding: 2px 0;
         }
 
         .param-label {
