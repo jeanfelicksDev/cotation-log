@@ -38,6 +38,7 @@ type Parameter = {
   category: string;
   label: string;
   value: string;
+  reasons?: { id: string; label: string }[];
 };
 
 function QuoteForm() {
@@ -57,6 +58,7 @@ function QuoteForm() {
   const [marge, setMarge] = useState(15); // Percentage
   const [dbParams, setDbParams] = useState<Record<string, Parameter[]>>({});
   const [status, setStatus] = useState("Rate under negotiation");
+  const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [suggestedRate, setSuggestedRate] = useState<any | null>(null);
   const router = useRouter();
@@ -94,6 +96,7 @@ function QuoteForm() {
       setDestination(q.destination || "");
       setCommodity(q.commodity || "");
       setStatus(q.status || "Rate under negotiation");
+      setReason(q.reason || "");
       setMode("sea");
       setBaseCosts(q.items.map((i: any) => ({
         id: i.id,
@@ -187,6 +190,14 @@ function QuoteForm() {
   }, 0);
 
   const handleSave = async () => {
+    const currentStatusObj = dbParams.status?.find(p => p.label === status);
+    const availableReasons = currentStatusObj?.reasons || [];
+    
+    if (availableReasons.length > 0 && !reason) {
+      alert(`Veuillez sélectionner une raison pour le statut "${status}".`);
+      return;
+    }
+
     setSaving(true);
     try {
       const data = {
@@ -199,6 +210,7 @@ function QuoteForm() {
         totalFinal: totalWithMarge,
         margin: totalWithMarge - totalBase,
         status,
+        reason,
         items: baseCosts,
         containers
       };
@@ -666,6 +678,24 @@ function QuoteForm() {
                     </select>
                   </div>
                 </div>
+
+                {/* Reasons Badges */}
+                {dbParams.status?.find(p => p.label === status)?.reasons && dbParams.status?.find(p => p.label === status)!.reasons!.length > 0 && (
+                  <div className="reasons-section">
+                    <label className="reasons-label">Motif / Raison (Obligatoire)</label>
+                    <div className="reasons-badges">
+                      {dbParams.status?.find(p => p.label === status)?.reasons?.map((r: any) => (
+                        <button
+                          key={r.id}
+                          className={clsx("reason-badge", reason === r.label && "active")}
+                          onClick={() => setReason(r.label === reason ? "" : r.label)}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="summary-table">
                   <table>
@@ -1393,6 +1423,55 @@ function QuoteForm() {
           outline: none;
           border-color: var(--primary);
           box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .reasons-section {
+          margin-top: 24px;
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 16px;
+          border: 1px dashed var(--border-surface);
+        }
+
+        .reasons-label {
+          display: block;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          margin-bottom: 12px;
+          letter-spacing: 0.5px;
+        }
+
+        .reasons-badges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .reason-badge {
+          padding: 8px 16px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-surface);
+          color: var(--text-dim);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .reason-badge:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-main);
+          transform: translateY(-2px);
+        }
+
+        .reason-badge.active {
+          background: var(--primary);
+          border-color: var(--primary);
+          color: white;
+          box-shadow: 0 0 15px var(--primary-glow);
         }
       `}</style>
     </div>

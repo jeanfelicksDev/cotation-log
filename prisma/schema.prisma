@@ -25,6 +25,7 @@ model Quotation {
   totalBase   Float
   totalFinal  Float
   margin      Float
+  reason      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
