@@ -68,6 +68,16 @@ export default function QuotationTree({ data, onSelect, onView, selectedId }: Qu
     const isExpanded = expanded[key];
     const hasChildren = !!children;
 
+    const getIconColor = (l: number) => {
+      switch(l) {
+        case 0: return "#10b981"; // Primary (Emerald) - Année
+        case 1: return "#f59e0b"; // Accent (Orange) - Mois
+        case 2: return "#38bdf8"; // Info (Sky Blue) - Client
+        case 3: return "#f3f4f6"; // Muted White - Document
+        default: return "#9ca3af";
+      }
+    };
+
     return (
       <div className="tree-node-wrapper" key={key}>
         <div 
@@ -103,7 +113,7 @@ export default function QuotationTree({ data, onSelect, onView, selectedId }: Qu
               }}
               title={onIconClick ? "Afficher la cotation" : undefined}
             >
-              {React.createElement(icon, { size: 16, className: "node-icon" })}
+              {React.createElement(icon, { size: 16, color: getIconColor(level), className: "node-icon" })}
             </div>
             <span className="node-label">{label}</span>
             {count > 0 && <span className="node-count">({count})</span>}
