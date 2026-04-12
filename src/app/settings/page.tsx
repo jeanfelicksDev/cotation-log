@@ -14,7 +14,8 @@ import {
   Search,
   DollarSign,
   Truck,
-  CreditCard
+  CreditCard,
+  Clock
 } from "lucide-react";
 import { clsx } from "clsx";
 import { 
@@ -26,7 +27,7 @@ import {
 
 type Parameter = {
   id: string;
-  category: "origin" | "destination" | "container" | "commodity" | "cost_type" | "currency" | "mode";
+  category: "origin" | "destination" | "container" | "commodity" | "cost_type" | "currency" | "mode" | "status";
   label: string;
 };
 
@@ -127,6 +128,12 @@ export default function SettingsPage() {
           >
             <Truck size={18} /> Modes de Transport
           </button>
+          <button 
+            className={clsx("nav-item", activeTab === "status" && "active")}
+            onClick={() => setActiveTab("status")}
+          >
+            <Clock size={18} /> Statut Cotation
+          </button>
         </aside>
 
         <main className="settings-main">
@@ -138,7 +145,8 @@ export default function SettingsPage() {
                 activeTab === "container" ? "Types de Conteneurs" : 
                 activeTab === "commodity" ? "Marchandises" :
                 activeTab === "cost_type" ? "Types de Frais" :
-                activeTab === "currency" ? "Devises" : "Modes de Transport"
+                activeTab === "currency" ? "Devises" : 
+                activeTab === "mode" ? "Modes de Transport" : "Statuts Cotation"
               }</h2>
               <p>Ajoutez ou modifiez les options disponibles dans le formulaire de cotation.</p>
             </div>

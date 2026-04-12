@@ -79,6 +79,13 @@ export async function seedParameters() {
     // Modes
     { category: "mode", label: "Maritime", value: "sea" },
     { category: "mode", label: "Aérien", value: "air" },
+
+    // Quotation Statuses
+    { category: "status", label: "Brouillon", value: "draft" },
+    { category: "status", label: "Envoyé", value: "sent" },
+    { category: "status", label: "Accepté", value: "accepted" },
+    { category: "status", label: "Refusé", value: "rejected" },
+    { category: "status", label: "Expiré", value: "expired" },
   ];
 
   await prisma.parameter.createMany({ data: defaults });

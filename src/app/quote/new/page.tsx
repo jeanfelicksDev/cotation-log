@@ -788,14 +788,18 @@ function QuoteForm() {
         }
 
         .amount-input select.currency-select {
-          background: transparent;
-          border: none;
+          background: rgba(255, 255, 255, 0.05); /* Add subtle background to make it look clickable */
+          border-left: 1px solid var(--border-surface);
+          border-radius: 0 12px 12px 0;
           color: var(--primary);
           font-weight: 700;
-          font-size: 11px;
+          font-size: 12px;
           cursor: pointer;
-          width: auto;
-          padding: 0 4px;
+          width: 80px;
+          padding: 0 8px;
+          height: 100%;
+          margin-left: -12px; /* Pull into the input area if desired, or just keep side-by-side */
+          z-index: 2;
         }
 
         .currency-label {
@@ -876,7 +880,7 @@ function QuoteForm() {
 
         .cost-row {
           display: grid;
-          grid-template-columns: 180px 1fr 140px 48px;
+          grid-template-columns: 180px 1fr 200px 48px;
           gap: 12px;
         }
 
@@ -941,16 +945,19 @@ function QuoteForm() {
         }
 
         .amount-input input {
-          width: 100%;
-          padding-right: 48px;
+          flex: 1;
+          min-width: 0;
+          padding-right: 44px; /* Space for the absolute span or relative select */
+          border-radius: 12px;
         }
 
         .amount-input span {
           position: absolute;
-          right: 12px;
-          font-size: 12px;
+          right: 14px;
+          font-size: 11px;
           font-weight: 700;
-          color: var(--text-dim);
+          color: var(--primary);
+          pointer-events: none;
         }
 
         .btn-delete {
