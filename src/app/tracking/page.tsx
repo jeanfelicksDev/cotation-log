@@ -209,8 +209,7 @@ export default function TrackingPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-
+      
       <div className="table-card">
         <table>
           <thead>
