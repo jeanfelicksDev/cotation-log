@@ -393,9 +393,9 @@ export default function SettingsPage() {
         .params-list {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 0.5cm;
           min-height: 200px;
-          max-height: calc(5 * (48px + 8px));
+          max-height: 400px;
           overflow-y: auto;
           padding-right: 4px;
           scrollbar-width: thin;
@@ -435,7 +435,7 @@ export default function SettingsPage() {
           justify-content: flex-start;
           gap: 12px;
           align-items: center;
-          padding: 14px 20px;
+          padding: 6px 12px;
         }
 
         .param-label {
