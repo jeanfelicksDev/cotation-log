@@ -191,6 +191,16 @@ function QuoteForm() {
     return acc + (Number(line.amount) || 0) * (1 + marge / 100);
   }, 0);
 
+  const getStatusColor = (statusName: string) => {
+    switch (statusName) {
+      case "Opportunity won": return "#10b981"; // Green
+      case "Opportunity Missed": return "#ef4444"; // Red
+      case "Rate under negotiation": return "#f59e0b"; // Orange/Amber
+      case "Draft": return "#6b7280"; // Grey
+      default: return "#3b82f6"; // Blue
+    }
+  };
+
   const handleSave = async () => {
     const currentStatusObj = dbParams.status?.find(p => p.label === status);
     const availableReasons = currentStatusObj?.reasons || [];
@@ -671,6 +681,11 @@ function QuoteForm() {
                       className="status-summary-select"
                       value={status}
                       onChange={e => setStatus(e.target.value)}
+                      style={{ 
+                        backgroundColor: getStatusColor(status),
+                        borderColor: getStatusColor(status),
+                        boxShadow: `0 0 15px ${getStatusColor(status)}44`
+                      }}
                     >
                       {dbParams.status?.map(p => (
                         <option key={p.id} value={p.label}>{p.label}</option>
