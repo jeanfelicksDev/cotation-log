@@ -39,6 +39,7 @@ export default function TrackingPage() {
   const [filterDateRange, setFilterDateRange] = useState("all");
   const [loading, setLoading] = useState(true);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [statusParams, setStatusParams] = useState<any[]>([]);
   const [treeFilters, setTreeFilters] = useState<{ year?: number; month?: number; client?: string; quoteId?: string }>({});
 
   useEffect(() => {
@@ -47,8 +48,12 @@ export default function TrackingPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const data = await getQuotations();
-    setOffers(data);
+    const [quotes, statusList] = await Promise.all([
+      getQuotations(),
+      getParameters("status")
+    ]);
+    setOffers(quotes);
+    setStatusParams(statusList);
     setLoading(false);
   };
 
@@ -180,10 +185,9 @@ export default function TrackingPage() {
                   <label><Clock size={14} /> Statut</label>
                   <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                     <option value="Tous">Tous</option>
-                    <option value="Draft">Brouillon</option>
-                    <option value="Sent">Envoyée</option>
-                    <option value="Accepted">Acceptée</option>
-                    <option value="Rejected">Refusée</option>
+                    {statusParams.map(s => (
+                      <option key={s.id} value={s.label}>{s.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="filter-item">
@@ -254,10 +258,18 @@ export default function TrackingPage() {
                       value={offer.status}
                       onChange={e => handleStatusChange(offer.id, e.target.value)}
                     >
-                      <option value="Draft">Brouillon</option>
-                      <option value="Sent">Envoyée</option>
-                      <option value="Accepted">Acceptée</option>
-                      <option value="Rejected">Refusée</option>
+                      {statusParams.length > 0 ? (
+                        statusParams.map(s => (
+                          <option key={s.id} value={s.label}>{s.label}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="Draft">Brouillon</option>
+                          <option value="Sent">Envoyée</option>
+                          <option value="Accepted">Acceptée</option>
+                          <option value="Rejected">Refusée</option>
+                        </>
+                      )}
                     </select>
                   </td>
                   <td className="actions-cell">
