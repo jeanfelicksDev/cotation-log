@@ -23,7 +23,7 @@ interface QuotationTreeProps {
   selectedId?: string;
 }
 
-export default function QuotationTree({ data, onSelect, selectedId }: QuotationTreeProps) {
+export default function QuotationTree({ data, onSelect, onView, selectedId }: QuotationTreeProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     root: true
   });
