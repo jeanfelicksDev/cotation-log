@@ -57,13 +57,8 @@ export default function TrackingPage() {
     setLoading(false);
   };
 
-  const handleStatusChange = async (id: string, status: string) => {
-    try {
-      await updateQuotationStatus(id, status);
-      setOffers(offers.map(o => o.id === id ? { ...o, status } : o));
-    } catch (err) {
-      alert("Erreur lors du changement de statut.");
-    }
+  const handleStatusChange = (id: string, status: string) => {
+    router.push(`/quote/new?id=${id}&step=3&status=${encodeURIComponent(status)}`);
   };
 
   const handleDelete = async (id: string) => {

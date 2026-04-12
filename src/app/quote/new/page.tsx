@@ -43,7 +43,7 @@ type Parameter = {
 function QuoteForm() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(parseInt(searchParams.get("step") || "1"));
   const [client, setClient] = useState("");
   const [direction, setDirection] = useState<"import" | "export">("import");
   const [mode, setMode] = useState<"sea" | "air">("sea");
@@ -77,7 +77,13 @@ function QuoteForm() {
     if (editId) {
       loadQuotation(editId);
     }
-  }, [editId]);
+    
+    // Check for explicit step or status in URL
+    const urlStep = searchParams.get("step");
+    const urlStatus = searchParams.get("status");
+    if (urlStep) setStep(parseInt(urlStep));
+    if (urlStatus) setStatus(urlStatus);
+  }, [editId, searchParams]);
 
   const loadQuotation = async (id: string) => {
     const q = await getQuotationById(id);
