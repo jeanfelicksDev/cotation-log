@@ -116,7 +116,7 @@ export default function QuotationTree({ data, onSelect, onView, selectedId }: Qu
               {React.createElement(icon, { size: 16, color: getIconColor(level), className: "node-icon" })}
             </div>
             <span className="node-label">{label}</span>
-            {count > 0 && <span className="node-count">({count})</span>}
+            {count > 0 && <span className="node-count" style={{ color: getIconColor(level) }}> ({count})</span>}
           </div>
         </div>
         
