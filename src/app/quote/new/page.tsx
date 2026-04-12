@@ -56,6 +56,7 @@ function QuoteForm() {
   const [baseCosts, setBaseCosts] = useState<CostLine[]>([]);
   const [marge, setMarge] = useState(15); // Percentage
   const [dbParams, setDbParams] = useState<Record<string, Parameter[]>>({});
+  const [status, setStatus] = useState("Rate under negotiation");
   const [saving, setSaving] = useState(false);
   const [suggestedRate, setSuggestedRate] = useState<any | null>(null);
   const router = useRouter();
@@ -86,6 +87,7 @@ function QuoteForm() {
       setOrigin(q.origin || "");
       setDestination(q.destination || "");
       setCommodity(q.commodity || "");
+      setStatus(q.status || "Rate under negotiation");
       setMode("sea");
       setBaseCosts(q.items.map((i: any) => ({
         id: i.id,
@@ -190,6 +192,7 @@ function QuoteForm() {
         totalBase,
         totalFinal: totalWithMarge,
         margin: totalWithMarge - totalBase,
+        status,
         items: baseCosts,
         containers
       };
@@ -640,6 +643,21 @@ function QuoteForm() {
                   <div className="detail-item">
                     <label>Équipement (Total)</label>
                     <p>{containers.map(c => `${c.quantity}x${c.type}`).join(" + ")}</p>
+                  </div>
+                  <div className="detail-item">
+                    <label>Statut</label>
+                    <select 
+                      className="status-summary-select"
+                      value={status}
+                      onChange={e => setStatus(e.target.value)}
+                    >
+                      {dbParams.status?.map(p => (
+                        <option key={p.id} value={p.label}>{p.label}</option>
+                      ))}
+                      {!dbParams.status?.some(p => p.label === "Rate under negotiation") && (
+                        <option value="Rate under negotiation">Rate under negotiation</option>
+                      )}
+                    </select>
                   </div>
                 </div>
 
@@ -1324,6 +1342,25 @@ function QuoteForm() {
           background: #0ea5e9;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+        .status-summary-select {
+          width: 100%;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-surface);
+          padding: 8px 12px;
+          border-radius: 12px;
+          color: var(--primary);
+          font-weight: 700;
+          font-size: 14px;
+          cursor: pointer;
+          margin-top: 4px;
+          transition: var(--transition-smooth);
+        }
+
+        .status-summary-select:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 10px var(--primary-glow);
         }
       `}</style>
     </div>
