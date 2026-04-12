@@ -32,10 +32,6 @@ export async function generateQuotationPDF(data: any) {
     doc.text(`${profile.phone || ""} | ${profile.email || ""}`, 190, 37, { align: "right" });
   }
 
-  const dateFiltered = new Date().toLocaleDateString("fr-FR");
-  doc.setFontSize(8);
-  doc.text(`Date d'émission: ${dateFiltered}`, 190, 47, { align: "right" });
-  
   // Client Info
   doc.setTextColor(50, 50, 50);
   doc.setFontSize(10);
@@ -95,6 +91,10 @@ export async function generateQuotationPDF(data: any) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
   doc.text("Cette offre est valable 15 jours calendaires à compter de la date d'émission.", 20, 280);
+  
+  const dateFiltered = new Date().toLocaleDateString("fr-FR");
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date d'émission: ${dateFiltered}`, 190, 280, { align: "right" });
   
   // Save/Download
   doc.save(`Cotation_${data.client.replace(/\s+/g, "_")}.pdf`);
