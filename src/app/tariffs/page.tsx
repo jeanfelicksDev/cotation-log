@@ -40,9 +40,14 @@ export default function TariffsPage() {
   const [forwarderSearch, setForwarderSearch] = useState("");
   const [editingRate, setEditingRate] = useState<any>(null);
   const [newRate, setNewRate] = useState({ ...EMPTY_RATE });
+
+  // Shared Parameters
   const [origins, setOrigins] = useState<any[]>([]);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [containers, setContainers] = useState<any[]>([]);
+  const [commodities, setCommodities] = useState<any[]>([]);
+  const [currencies, setCurrencies] = useState<any[]>([]);
+  const [costTypes, setCostTypes] = useState<any[]>([]);
 
   // Init
   useEffect(() => {
@@ -80,6 +85,9 @@ export default function TariffsPage() {
     setOrigins(params.filter((p: any) => p.category === "origin"));
     setDestinations(params.filter((p: any) => p.category === "destination"));
     setContainers(params.filter((p: any) => p.category === "container"));
+    setCommodities(params.filter((p: any) => p.category === "commodity"));
+    setCurrencies(params.filter((p: any) => p.category === "currency"));
+    setCostTypes(params.filter((p: any) => p.category === "cost_type"));
     setForwarderLoading(false);
   }
 
@@ -308,6 +316,9 @@ export default function TariffsPage() {
         origins={origins}
         destinations={destinations}
         containers={containers}
+        commodities={commodities}
+        currencies={currencies}
+        costTypes={costTypes}
       />
 
       <style jsx>{`
@@ -482,7 +493,11 @@ export default function TariffsPage() {
 
 // ─── Portal Modal ─────────────────────────────────────────────────────────────
 
-function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTariff, setNewTariff, newRate, setNewRate, onSubmitMaison, onSubmitForwarder, origins, destinations, containers }: any) {
+function TariffModal({ 
+  activeModal, onClose, editingTariff, editingRate, newTariff, setNewTariff, 
+  newRate, setNewRate, onSubmitMaison, onSubmitForwarder, 
+  origins, destinations, containers, commodities, currencies, costTypes 
+}: any) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   if (!mounted || !activeModal) return null;
@@ -525,15 +540,17 @@ function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTari
           <form onSubmit={onSubmitMaison} style={{ padding: 24 }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <MField label="Zone / Destination">
-                <MInput value={newTariff.zone} onChange={(v: string) => setNewTariff({ ...newTariff, zone: v })} placeholder="ex: Europe, Asie..." required />
+                <MInput list="m-dest" value={newTariff.zone} onChange={(v: string) => setNewTariff({ ...newTariff, zone: formatInputMask(v) })} placeholder="ex: Europe, Asie..." required />
+                <datalist id="m-dest">{destinations.map((d: any) => <option key={d.id} value={d.label} />)}</datalist>
               </MField>
               <MField label="Type de tarif">
                 <MSelect value={newTariff.type} onChange={(v: string) => setNewTariff({ ...newTariff, type: v })}
-                  options={[{ v: "Fret", l: "Fret" }, { v: "THC", l: "THC" }, { v: "Surestaries", l: "Surestaries" }, { v: "Autre", l: "Autre" }]} />
+                  options={costTypes.length > 0 ? costTypes.map((p: any) => ({ v: p.value, l: p.label })) : [{ v: "Fret", l: "Fret" }, { v: "THC", l: "THC" }, { v: "Surestaries", l: "Surestaries" }, { v: "Autre", l: "Autre" }]} />
               </MField>
               <div style={{ gridColumn: "1/-1" }}>
-                <MField label="Description détaillée">
-                  <MInput value={newTariff.description} onChange={(v: string) => setNewTariff({ ...newTariff, description: v })} placeholder="Détails du service..." required />
+                <MField label="Marchandises">
+                  <MInput list="m-comm" value={newTariff.description} onChange={(v: string) => setNewTariff({ ...newTariff, description: formatInputMask(v) })} placeholder="Ex: Chaussures, Pièces..." required />
+                  <datalist id="m-comm">{commodities.map((c: any) => <option key={c.id} value={c.label} />)}</datalist>
                 </MField>
               </div>
               <MField label="Montant">
@@ -541,7 +558,7 @@ function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTari
               </MField>
               <MField label="Devise">
                 <MSelect value={newTariff.currency} onChange={(v: string) => setNewTariff({ ...newTariff, currency: v })}
-                  options={[{ v: "EUR", l: "Euro (€)" }, { v: "XOF", l: "FCFA (CFA)" }]} />
+                  options={currencies.length > 0 ? currencies.map((p: any) => ({ v: p.value, l: `${p.value.toUpperCase()} (${p.label})` })) : [{ v: "EUR", l: "Euro (€)" }, { v: "XOF", l: "FCFA (CFA)" }]} />
               </MField>
             </div>
             <MFooter onClose={onClose} isEdit={!!editingTariff} color={color} glow={glow} />
@@ -551,23 +568,24 @@ function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTari
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div style={{ gridColumn: "1/-1" }}>
                 <MField label="Compagnie Maritime / Armateur">
-                  <MInput value={newRate.carrier} onChange={(v: string) => setNewRate({ ...newRate, carrier: v })} required />
+                  <MInput value={newRate.carrier} onChange={(v: string) => setNewRate({ ...newRate, carrier: formatInputMask(v) })} required />
                 </MField>
               </div>
               <MField label="Port de Départ">
-                <MInput list="p-orig" value={newRate.origin} onChange={(v: string) => setNewRate({ ...newRate, origin: v })} required />
-                <datalist id="p-orig">{origins.map((o: any) => <option key={o.id} value={o.value} />)}</datalist>
+                <MInput list="p-orig" value={newRate.origin} onChange={(v: string) => setNewRate({ ...newRate, origin: formatInputMask(v) })} required />
+                <datalist id="p-orig">{origins.map((o: any) => <option key={o.id} value={o.label} />)}</datalist>
               </MField>
               <MField label="Port d'Arrivée">
-                <MInput list="p-dest" value={newRate.destination} onChange={(v: string) => setNewRate({ ...newRate, destination: v })} required />
-                <datalist id="p-dest">{destinations.map((d: any) => <option key={d.id} value={d.value} />)}</datalist>
+                <MInput list="p-dest" value={newRate.destination} onChange={(v: string) => setNewRate({ ...newRate, destination: formatInputMask(v) })} required />
+                <datalist id="p-dest">{destinations.map((d: any) => <option key={d.id} value={d.label} />)}</datalist>
               </MField>
               <MField label="Type de Conteneur">
                 <MSelect value={newRate.containerType} onChange={(v: string) => setNewRate({ ...newRate, containerType: v })} required
                   options={[{ v: "", l: "Sélectionner..." }, ...containers.map((c: any) => ({ v: c.value, l: c.label }))]} />
               </MField>
               <MField label="Marchandise">
-                <MInput value={newRate.commodity} onChange={(v: string) => setNewRate({ ...newRate, commodity: v })} required />
+                <MInput list="p-comm" value={newRate.commodity} onChange={(v: string) => setNewRate({ ...newRate, commodity: formatInputMask(v) })} required />
+                <datalist id="p-comm">{commodities.map((c: any) => <option key={c.id} value={c.label} />)}</datalist>
               </MField>
               <MField label="Démarrage Validité">
                 <MInput type="date" value={newRate.validFrom} onChange={(v: string) => setNewRate({ ...newRate, validFrom: v })} required />
@@ -580,7 +598,7 @@ function TariffModal({ activeModal, onClose, editingTariff, editingRate, newTari
               </MField>
               <MField label="Devise">
                 <MSelect value={newRate.currency} onChange={(v: string) => setNewRate({ ...newRate, currency: v })}
-                  options={[{ v: "EUR", l: "EUR (€)" }, { v: "USD", l: "USD ($)" }, { v: "XOF", l: "XOF (CFA)" }]} />
+                  options={currencies.length > 0 ? currencies.map((p: any) => ({ v: p.value, l: p.value.toUpperCase() })) : [{ v: "EUR", l: "EUR (€)" }, { v: "USD", l: "USD ($)" }, { v: "XOF", l: "XOF (CFA)" }]} />
               </MField>
             </div>
             <MFooter onClose={onClose} isEdit={!!editingRate} color={color} glow={glow} />
