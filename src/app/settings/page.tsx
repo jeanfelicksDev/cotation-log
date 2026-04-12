@@ -436,7 +436,7 @@ export default function SettingsPage() {
         .params-list {
           display: flex;
           flex-direction: column;
-          gap: 1cm;
+          gap: 0.5cm;
           min-height: 200px;
           max-height: 400px;
           overflow-y: auto;
