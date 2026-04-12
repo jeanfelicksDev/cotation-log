@@ -161,7 +161,7 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
                       2,
                       quotes.map((q: any) => 
                         renderNode(
-                          q.reference, 
+                          `${format(new Date(q.createdAt), "dd/MM")} - ${q.destination || "Sans dest."}`, 
                           q.id, 
                           0, 
                           FileText, 

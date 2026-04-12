@@ -153,11 +153,10 @@ export default function TrackingPage() {
         {/* Contenu principal */}
 
       <div className="tab-control">
-        <div className="search-bar-primary">
           <Search size={18} className="icon" />
           <input 
             type="text" 
-            placeholder="Rechercher un client, une référence..." 
+            placeholder="Rechercher un client..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
