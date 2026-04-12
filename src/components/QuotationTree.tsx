@@ -19,6 +19,7 @@ import { fr } from "date-fns/locale";
 interface QuotationTreeProps {
   data: any[];
   onSelect: (filters: { year?: number; month?: number; client?: string; quoteId?: string }) => void;
+  onView?: (id: string) => void;
   selectedId?: string;
 }
 
@@ -61,7 +62,8 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
     icon: any, 
     level: number, 
     children?: React.ReactNode,
-    onClick?: () => void
+    onClick?: () => void,
+    onIconClick?: () => void
   ) => {
     const isExpanded = expanded[key];
     const hasChildren = !!children;
@@ -91,7 +93,18 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
               </motion.div>
             ) : <div className="chevron-spacer" />}
             
-            {React.createElement(icon, { size: 16, className: "node-icon" })}
+            <div 
+              className={clsx("node-icon-wrapper", onIconClick && "clickable")}
+              onClick={(e) => {
+                if (onIconClick) {
+                  e.stopPropagation();
+                  onIconClick();
+                }
+              }}
+              title={onIconClick ? "Afficher la cotation" : undefined}
+            >
+              {React.createElement(icon, { size: 16, className: "node-icon" })}
+            </div>
             <span className="node-label">{label}</span>
             {count > 0 && <span className="node-count">({count})</span>}
           </div>
@@ -167,7 +180,8 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
                           FileText, 
                           3,
                           undefined,
-                          () => onSelect({ quoteId: q.id })
+                          () => onSelect({ quoteId: q.id }),
+                          () => onView && onView(q.id)
                         )
                       ),
                       () => onSelect({ year: Number(year), client }) 
@@ -295,12 +309,31 @@ export default function QuotationTree({ data, onSelect, selectedId }: QuotationT
           color: var(--primary);
         }
 
+        .node-icon-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          border-radius: 4px;
+          transition: all 0.2s;
+        }
+
+        .node-icon-wrapper.clickable:hover {
+          background: rgba(16, 185, 129, 0.2);
+          transform: scale(1.2);
+        }
+
+        .node-icon-wrapper.clickable:hover .node-icon {
+          color: var(--primary);
+        }
+
         .node-label {
           font-size: 13px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           flex: 1;
+          padding-left: 2px;
         }
 
         .node-count {

@@ -313,6 +313,7 @@ export default function TrackingPage() {
         <QuotationTree 
           data={offers} 
           onSelect={setTreeFilters} 
+          onView={(id) => router.push(`/quote/new?id=${id}`)}
           selectedId={treeFilters.quoteId} 
         />
         {Object.keys(treeFilters).length > 0 && (
