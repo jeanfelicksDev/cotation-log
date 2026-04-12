@@ -60,6 +60,7 @@ function QuoteForm() {
   const [status, setStatus] = useState("Rate under negotiation");
   const [reason, setReason] = useState("");
   const [comments, setComments] = useState("");
+  const [clientResponseDate, setClientResponseDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [suggestedRate, setSuggestedRate] = useState<any | null>(null);
   const router = useRouter();
@@ -99,6 +100,7 @@ function QuoteForm() {
       setStatus(q.status || "Rate under negotiation");
       setReason(q.reason || "");
       setComments(q.comments || "");
+      setClientResponseDate(q.clientResponseDate ? new Date(q.clientResponseDate).toISOString().split('T')[0] : "");
       setMode("sea");
       setBaseCosts(q.items.map((i: any) => ({
         id: i.id,
@@ -224,6 +226,7 @@ function QuoteForm() {
         status,
         reason,
         comments,
+        clientResponseDate,
         items: baseCosts,
         containers
       };
@@ -675,6 +678,7 @@ function QuoteForm() {
                     <label>Équipement (Total)</label>
                     <p>{containers.map(c => `${c.quantity}x${c.type}`).join(" + ")}</p>
                   </div>
+                <div className="status-container">
                   <div className="detail-item">
                     <label>Statut</label>
                     <select 
@@ -690,6 +694,17 @@ function QuoteForm() {
                       )}
                     </select>
                   </div>
+
+                  <div className="detail-item">
+                    <label>Date de réponse du client</label>
+                    <input 
+                      type="date"
+                      className="client-date-input"
+                      value={clientResponseDate}
+                      onChange={e => setClientResponseDate(e.target.value)}
+                    />
+                  </div>
+                </div>
                 </div>
 
                 {/* Reasons Badges */}
@@ -1444,6 +1459,36 @@ function QuoteForm() {
           color: #f59e0b;
           border-left-color: #f59e0b;
           text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .status-container {
+          display: flex;
+          gap: 24px;
+          margin-bottom: 24px;
+        }
+
+        .status-container .detail-item {
+          flex: 1;
+          margin-bottom: 0;
+        }
+
+        .client-date-input {
+          width: 100%;
+          padding: 8px 12px;
+          border-radius: 12px;
+          background: #000000;
+          border: 1px solid var(--border-surface);
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .client-date-input:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 10px var(--primary-glow);
         }
 
         .section-title.travel {

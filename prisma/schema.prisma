@@ -27,6 +27,7 @@ model Quotation {
   margin      Float
   reason      String?
   comments    String?
+  clientResponseDate DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
