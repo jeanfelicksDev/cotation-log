@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
   Trash2, 
+  Edit2,
+  Check,
   Settings, 
   MapPin, 
   Box, 
@@ -25,7 +27,8 @@ import {
   deleteParameter, 
   seedParameters,
   createReason,
-  deleteReason
+  deleteReason,
+  updateParameter
 } from "@/lib/actions";
 
 type Parameter = {
@@ -41,6 +44,8 @@ export default function SettingsPage() {
   const [newValue, setNewValue] = useState("");
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     initSettings();
@@ -73,6 +78,19 @@ export default function SettingsPage() {
       setParams(params.filter(p => p.id !== id));
     } catch (error) {
       alert("Erreur lors de la suppression.");
+    }
+  };
+
+  const saveEditParam = async (id: string) => {
+    if (!editValue) return;
+    try {
+      const updated = await updateParameter(id, editValue);
+      // @ts-ignore
+      setParams(params.map(p => p.id === id ? { ...p, label: updated.label } : p));
+      setEditingId(null);
+      setEditValue("");
+    } catch (error) {
+      alert("Erreur lors de la modification.");
     }
   };
   
@@ -224,10 +242,34 @@ export default function SettingsPage() {
                         className={clsx("param-card", activeTab === "status" && "with-details")}
                       >
                         <div className="param-main">
-                          <span className="param-label">{p.label}</span>
-                          <button className="btn-delete" onClick={() => removeParam(p.id)}>
-                            <Trash2 size={16} />
-                          </button>
+                          {editingId === p.id ? (
+                            <div className="edit-mode-container">
+                              <input 
+                                value={editValue} 
+                                onChange={e => setEditValue(e.target.value)} 
+                                autoFocus
+                                onKeyDown={e => e.key === "Enter" && saveEditParam(p.id)}
+                              />
+                              <button className="btn-save-sm" onClick={() => saveEditParam(p.id)}>
+                                <Check size={16} />
+                              </button>
+                              <button className="btn-cancel-sm" onClick={() => { setEditingId(null); setEditValue(""); }}>
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="param-label">{p.label}</span>
+                              <div className="param-actions">
+                                <button className="btn-edit" onClick={() => { setEditingId(p.id); setEditValue(p.label); }}>
+                                  <Edit2 size={16} />
+                                </button>
+                                <button className="btn-delete" onClick={() => removeParam(p.id)}>
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         {activeTab === "status" && (
@@ -517,6 +559,68 @@ export default function SettingsPage() {
         .inline-add-btn:hover {
           transform: scale(1.1);
         }
+
+        .param-actions {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+
+        .btn-edit {
+          color: #9ca3af;
+          opacity: 0.6;
+          transition: var(--transition-smooth);
+          padding: 8px;
+          border-radius: 8px;
+        }
+
+        .btn-edit:hover {
+          opacity: 1;
+          color: #38bdf8;
+          background: rgba(56, 189, 248, 0.1);
+        }
+
+        .edit-mode-container {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+        }
+
+        .edit-mode-container input {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--primary);
+          padding: 4px 8px;
+          border-radius: 6px;
+          color: white;
+          font-size: 13px;
+          outline: none;
+        }
+
+        .btn-save-sm {
+          color: #10b981;
+          padding: 4px;
+          opacity: 0.8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 4px;
+        }
+
+        .btn-save-sm:hover { opacity: 1; background: rgba(16, 185, 129, 0.1); }
+
+        .btn-cancel-sm {
+          color: #9ca3af;
+          padding: 4px;
+          opacity: 0.8;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 4px;
+        }
+
+        .btn-cancel-sm:hover { opacity: 1; color: white; background: rgba(255,255,255,0.05); }
 
         .btn-delete {
           color: #ef4444;

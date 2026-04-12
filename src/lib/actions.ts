@@ -48,6 +48,20 @@ export async function deleteParameter(id: string) {
   }
 }
 
+export async function updateParameter(id: string, label: string) {
+  try {
+    const value = label.toLowerCase().replace(/ /g, "_").replace(/[^\w]/g, "");
+    const updatedParam = await prisma.parameter.update({
+      where: { id },
+      data: { label, value }
+    });
+    return updatedParam;
+  } catch (error) {
+    console.error("Error updating parameter:", error);
+    throw error;
+  }
+}
+
 export async function createReason(parameterId: string, label: string) {
   try {
     const reason = await prisma.parameterReason.create({
