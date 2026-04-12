@@ -219,6 +219,7 @@ export default function TrackingPage() {
               <th>Date</th>
               <th className="right">Montant</th>
               <th>Statut</th>
+              <th>Date Retour</th>
               <th className="center">Actions</th>
             </tr>
           </thead>
@@ -272,6 +273,12 @@ export default function TrackingPage() {
                         </>
                       )}
                     </select>
+                  </td>
+                  <td className="text-dim">
+                    {offer.clientResponseDate 
+                      ? format(new Date(offer.clientResponseDate), "dd MMM yyyy", { locale: fr }) 
+                      : "-"
+                    }
                   </td>
                   <td className="actions-cell">
                     <button className="action-btn download" title="Télécharger PDF" onClick={() => handleDownload(offer)}>
