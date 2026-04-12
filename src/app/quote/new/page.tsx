@@ -681,11 +681,6 @@ function QuoteForm() {
                       className="status-summary-select"
                       value={status}
                       onChange={e => setStatus(e.target.value)}
-                      style={{ 
-                        backgroundColor: getStatusColor(status),
-                        borderColor: getStatusColor(status),
-                        boxShadow: `0 0 15px ${getStatusColor(status)}44`
-                      }}
                     >
                       {dbParams.status?.map(p => (
                         <option key={p.id} value={p.label}>{p.label}</option>
