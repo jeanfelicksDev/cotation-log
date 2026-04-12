@@ -30,6 +30,7 @@ import {
   deleteReason,
   updateParameter
 } from "@/lib/actions";
+import { formatInputMask } from "@/lib/formatters";
 
 type Parameter = {
   id: string;
@@ -210,7 +211,7 @@ export default function SettingsPage() {
                 type="text" 
                 placeholder="Nouvelle valeur..." 
                 value={newValue}
-                onChange={e => setNewValue(e.target.value)}
+                onChange={e => setNewValue(formatInputMask(e.target.value))}
                 onKeyDown={e => e.key === "Enter" && addParam()}
               />
               <button className="btn-add" onClick={addParam}>
@@ -246,7 +247,7 @@ export default function SettingsPage() {
                             <div className="edit-mode-container">
                               <input 
                                 value={editValue} 
-                                onChange={e => setEditValue(e.target.value)} 
+                                onChange={e => setEditValue(formatInputMask(e.target.value))} 
                                 autoFocus
                                 onKeyDown={e => e.key === "Enter" && saveEditParam(p.id)}
                               />
@@ -300,7 +301,7 @@ export default function SettingsPage() {
                                   type="text" 
                                   placeholder="Nouvelle raison..."
                                   value={reasonInputs[p.id] || ""}
-                                  onChange={e => setReasonInputs({ ...reasonInputs, [p.id]: e.target.value })}
+                                  onChange={e => setReasonInputs({ ...reasonInputs, [p.id]: formatInputMask(e.target.value) })}
                                   onKeyDown={e => e.key === "Enter" && handleAddReason(p.id)}
                                 />
                                 <button className="inline-add-btn" onClick={() => handleAddReason(p.id)}>

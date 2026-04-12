@@ -23,6 +23,7 @@ import { getParameters, saveQuotation, getQuotationById, updateQuotation, findMa
 import { useRouter, useSearchParams } from "next/navigation";
 import { db } from "@/lib/db";
 import { v4 as uuidv4 } from 'uuid';
+import { formatInputMask } from "@/lib/formatters";
 
 type CostLine = {
   id: string;
@@ -317,7 +318,7 @@ function QuoteForm() {
                     type="text" 
                     placeholder="Ex: Sodiam Sarl" 
                     value={client} 
-                    onChange={e => setClient(e.target.value)}
+                    onChange={e => setClient(formatInputMask(e.target.value))}
                   />
                 </div>
               </div>
@@ -384,7 +385,7 @@ function QuoteForm() {
                       list="origins-list"
                       placeholder="Ex: Shanghai (CNSHA)" 
                       value={origin} 
-                      onChange={e => setOrigin(e.target.value)}
+                      onChange={e => setOrigin(formatInputMask(e.target.value))}
                     />
                     <datalist id="origins-list">
                       {dbParams.origin?.map(p => <option key={p.id} value={p.label} />)}
@@ -397,7 +398,7 @@ function QuoteForm() {
                       list="destinations-list"
                       placeholder="Ex: Lomé (TGLFW)" 
                       value={destination} 
-                      onChange={e => setDestination(e.target.value)}
+                      onChange={e => setDestination(formatInputMask(e.target.value))}
                     />
                     <datalist id="destinations-list">
                       {dbParams.destination?.map(p => <option key={p.id} value={p.label} />)}
@@ -411,7 +412,7 @@ function QuoteForm() {
                     list="commodities-list"
                     placeholder="Ex: Pièces détachées" 
                     value={commodity} 
-                    onChange={e => setCommodity(e.target.value)}
+                    onChange={e => setCommodity(formatInputMask(e.target.value))}
                   />
                   <datalist id="commodities-list">
                     {dbParams.commodity?.map(p => <option key={p.id} value={p.label} />)}

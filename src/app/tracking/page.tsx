@@ -31,6 +31,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import QuotationTree from "@/components/QuotationTree";
 import { db } from "@/lib/db";
+import { formatInputMask } from "@/lib/formatters";
 
 export default function TrackingPage() {
   const router = useRouter();
@@ -190,7 +191,7 @@ export default function TrackingPage() {
               type="text" 
               placeholder="Rechercher un client..." 
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(formatInputMask(e.target.value))}
             />
           </div>
           <button 

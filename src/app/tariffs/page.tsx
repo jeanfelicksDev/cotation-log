@@ -9,6 +9,7 @@ import {
   getFreightRates, createFreightRate, deleteFreightRate, updateFreightRate,
   getParameters
 } from "@/lib/actions";
+import { formatInputMask } from "@/lib/formatters";
 
 type TabType = "maison" | "forwarder";
 type ModalType = "maison" | "forwarder" | null;
@@ -208,7 +209,7 @@ export default function TariffsPage() {
             <div className="toolbar">
               <div className="search-wrap">
                 <Search size={16} className="search-icon" />
-                <input className="search-input" placeholder="Rechercher une zone, description..." value={maisonSearch} onChange={e => setMaisonSearch(e.target.value)} />
+                <input className="search-input" placeholder="Rechercher une zone, description..." value={maisonSearch} onChange={e => setMaisonSearch(formatInputMask(e.target.value))} />
               </div>
               <button className="add-btn add-btn-maison" onClick={openAddMaison}>
                 <Plus size={16} /> Nouveau Tarif Maison
@@ -245,7 +246,7 @@ export default function TariffsPage() {
             <div className="toolbar">
               <div className="search-wrap">
                 <Search size={16} className="search-icon" />
-                <input className="search-input" placeholder="Rechercher un transporteur, port..." value={forwarderSearch} onChange={e => setForwarderSearch(e.target.value)} />
+                <input className="search-input" placeholder="Rechercher un transporteur, port..." value={forwarderSearch} onChange={e => setForwarderSearch(formatInputMask(e.target.value))} />
               </div>
               <button className="add-btn add-btn-forwarder" onClick={openAddForwarder}>
                 <Plus size={16} /> Nouveau Tarif Armateur

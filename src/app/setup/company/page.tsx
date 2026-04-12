@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getCompanyProfile, updateCompanyProfile } from "@/lib/actions";
+import { formatInputMask } from "@/lib/formatters";
 
 export default function CompanySetupPage() {
   const router = useRouter();
@@ -138,7 +139,7 @@ export default function CompanySetupPage() {
                 required
                 placeholder="Nom officiel de l'entreprise"
                 value={profile.corporateName}
-                onChange={e => setProfile({ ...profile, corporateName: e.target.value })}
+                onChange={e => setProfile({ ...profile, corporateName: formatInputMask(e.target.value) })}
               />
             </div>
             
@@ -148,7 +149,7 @@ export default function CompanySetupPage() {
                 type="text" 
                 placeholder="N°, Rue, Ville, Pays"
                 value={profile.address}
-                onChange={e => setProfile({ ...profile, address: e.target.value })}
+                onChange={e => setProfile({ ...profile, address: formatInputMask(e.target.value) })}
               />
             </div>
 
