@@ -142,29 +142,15 @@ export default function TrackingPage() {
 
   return (
     <div className="tracking-wrapper">
-      <aside className="tracking-sidebar">
-        <QuotationTree 
-          data={offers} 
-          onSelect={setTreeFilters} 
-          selectedId={treeFilters.quoteId} 
-        />
-        {Object.keys(treeFilters).length > 0 && (
-          <button 
-            className="btn-reset-tree"
-            onClick={() => setTreeFilters({})}
-          >
-            Réinitialiser l'explorateur
-          </button>
-        )}
-      </aside>
-
       <div className="tracking-container">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Suivi des Offres</h1>
-          <p className="page-subtitle">Gérez vos cotations et suivez leur statut d'approbation.</p>
-        </div>
-      </header>
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">Suivi des Offres</h1>
+            <p className="page-subtitle">Gérez vos cotations et suivez leur statut d'approbation.</p>
+          </div>
+        </header>
+        
+        {/* Contenu principal */}
 
       <div className="tab-control">
         <div className="search-bar-primary">
@@ -317,6 +303,23 @@ export default function TrackingPage() {
           </div>
         )}
       </div>
+      </div>
+
+      <aside className="tracking-sidebar">
+        <QuotationTree 
+          data={offers} 
+          onSelect={setTreeFilters} 
+          selectedId={treeFilters.quoteId} 
+        />
+        {Object.keys(treeFilters).length > 0 && (
+          <button 
+            className="btn-reset-tree"
+            onClick={() => setTreeFilters({})}
+          >
+            Réinitialiser l'explorateur
+          </button>
+        )}
+      </aside>
     </div>
 
     <style jsx>{`
