@@ -123,6 +123,23 @@ export default function TrackingPage() {
     return matchesSearch && matchesStatus && matchesDirection;
   });
 
+  const getStatusColor = (statusName: string) => {
+    switch (statusName) {
+      case "Accepted": 
+      case "Acceptée":
+      case "Opportunity won": return "#10b981"; // Green
+      case "Rejected":
+      case "Refusée":
+      case "Opportunity Missed": return "#ef4444"; // Red
+      case "Sent":
+      case "Envoyée": return "#3b82f6"; // Blue
+      case "Draft":
+      case "Brouillon": return "#6b7280"; // Grey
+      case "Rate under negotiation": return "#f59e0b"; // Orange/Amber
+      default: return "#3b82f6";
+    }
+  };
+
   return (
     <div className="tracking-wrapper">
       <aside className="tracking-sidebar">
@@ -249,9 +266,15 @@ export default function TrackingPage() {
                   </td>
                   <td>
                     <select 
-                      className={clsx("status-select", offer.status.toLowerCase())}
+                      className="status-select"
                       value={offer.status}
                       onChange={e => handleStatusChange(offer.id, e.target.value)}
+                      style={{ 
+                        backgroundColor: getStatusColor(offer.status),
+                        borderColor: getStatusColor(offer.status),
+                        color: 'white',
+                        boxShadow: `0 0 10px ${getStatusColor(offer.status)}44`
+                      }}
                     >
                       {statusParams.length > 0 ? (
                         statusParams.map(s => (
@@ -511,9 +534,10 @@ export default function TrackingPage() {
           cursor: pointer;
         }
 
-        .status-select.accepted { color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
-        .status-select.rejected { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
-        .status-select.draft { color: var(--text-muted); }
+        .status-select:focus {
+          outline: none;
+          box-shadow: 0 0 15px var(--primary-glow);
+        }
 
         .loading-state {
           padding: 60px;
