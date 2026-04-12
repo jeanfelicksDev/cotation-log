@@ -1,15 +1,44 @@
-import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
+import Dexie, { Table } from 'dexie';
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+export interface LocalQuotation {
+  id: string; // Internal ID or random string
+  remoteId?: string; // Prisma ID if synced
+  reference: string;
+  clientName: string;
+  origin: string;
+  destination: string;
+  totalFinal: number;
+  status: string;
+  clientResponseDate?: string | Date;
+  direction: string;
+  commodity: string;
+  mode: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isSynced: boolean;
+  isDeleted?: boolean;
+}
 
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL;
-const pool = connectionString ? new Pool({ connectionString }) : null;
-const adapter = pool ? new PrismaPg(pool) : null;
+export interface SyncAction {
+  id?: number;
+  type: 'CREATE' | 'UPDATE' | 'DELETE';
+  entityType: 'QUOTATION';
+  entityId: string;
+  data: any;
+  timestamp: number;
+}
 
-export const prisma =
-  globalForPrisma.prisma ||
-  (adapter ? new (PrismaClient as any)({ adapter }) : new PrismaClient());
+export class AppDatabase extends Dexie {
+  quotations!: Table<LocalQuotation>;
+  syncQueue!: Table<SyncAction>;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  constructor() {
+    super('CotaLogDB');
+    this.version(1).stores({
+      quotations: 'id, remoteId, clientName, status, isSynced',
+      syncQueue: '++id, entityId, type'
+    });
+  }
+}
+
+export const db = new AppDatabase();

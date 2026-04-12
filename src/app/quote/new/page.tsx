@@ -21,6 +21,8 @@ import { clsx } from "clsx";
 import { generateQuotationPDF } from "@/lib/export-pdf";
 import { getParameters, saveQuotation, getQuotationById, updateQuotation, findMatchingFreightRate } from "@/lib/actions";
 import { useRouter, useSearchParams } from "next/navigation";
+import { db } from "@/lib/db";
+import { v4 as uuidv4 } from 'uuid';
 
 type CostLine = {
   id: string;
@@ -213,34 +215,66 @@ function QuoteForm() {
     }
 
     setSaving(true);
+    const localId = editId || uuidv4();
+    
+    const data = {
+      clientName: client,
+      direction,
+      origin,
+      destination,
+      commodity,
+      totalBase,
+      totalFinal: totalWithMarge,
+      margin: totalWithMarge - totalBase,
+      status,
+      reason,
+      comments,
+      clientResponseDate,
+      items: baseCosts,
+      containers,
+      mode: mode as string,
+      reference: editId ? "" : `QT-${new Date().getTime()}` // Placeholder ref for local
+    };
+
     try {
-      const data = {
-        clientName: client,
-        direction,
-        origin,
-        destination,
-        commodity,
-        totalBase,
-        totalFinal: totalWithMarge,
-        margin: totalWithMarge - totalBase,
-        status,
-        reason,
-        comments,
-        clientResponseDate,
-        items: baseCosts,
-        containers
-      };
-      
-      if (editId) {
-        await updateQuotation(editId, data);
+      // 1. Save locally first
+      await db.quotations.put({
+        ...data,
+        id: localId,
+        remoteId: editId || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isSynced: false
+      } as any);
+
+      // 2. Try the server
+      if (navigator.onLine) {
+        if (editId) {
+          await updateQuotation(editId, data);
+        } else {
+          await saveQuotation(data);
+        }
+        // Mark as synced if successful
+        await db.quotations.update(localId, { isSynced: true });
+        alert(`Cotation ${editId ? "modifiée" : "enregistrée"} avec succès !`);
       } else {
-        await saveQuotation(data);
+        // Queue for sync later
+        await db.syncQueue.add({
+          type: editId ? 'UPDATE' : 'CREATE',
+          entityType: 'QUOTATION',
+          entityId: localId,
+          data,
+          timestamp: Date.now()
+        });
+        alert("Mode hors-ligne : Votre offre est enregistrée localement et sera synchronisée dès le retour de la connexion.");
       }
       
-      alert(`Cotation ${editId ? "modifiée" : "enregistrée"} avec succès !`);
       router.push("/tracking");
     } catch (err) {
-      alert("Erreur lors de l'enregistrement de la cotation.");
+      console.error("Save error:", err);
+      // Even if server fails, we have it locally if we reach here
+      // But usually network errors are handled above with navigator.onLine
+      alert("Note: L'enregistrement sur le serveur a échoué, mais l'offre est conservée localement.");
     } finally {
       setSaving(false);
     }

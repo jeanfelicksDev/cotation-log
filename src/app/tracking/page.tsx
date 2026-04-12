@@ -30,6 +30,7 @@ import { generateQuotationPDF } from "@/lib/export-pdf";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import QuotationTree from "@/components/QuotationTree";
+import { db } from "@/lib/db";
 
 export default function TrackingPage() {
   const router = useRouter();
@@ -49,13 +50,38 @@ export default function TrackingPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const [quotes, statusList] = await Promise.all([
-      getQuotations(),
-      getParameters("status")
-    ]);
-    setOffers(quotes);
-    setStatusParams(statusList);
-    setLoading(false);
+    try {
+      const statusList = await getParameters("status");
+      setStatusParams(statusList);
+
+      if (navigator.onLine) {
+        const quotes = await getQuotations();
+        
+        // Update local cache with remote data
+        for (const q of quotes) {
+          await db.quotations.put({
+            ...q,
+            remoteId: q.id,
+            isSynced: true
+          });
+        }
+        
+        // Get local-only (unsynced) quotes
+        const localQuotes = await db.quotations.where('isSynced').equals(0).toArray();
+        setOffers([...quotes, ...localQuotes]);
+      } else {
+        // Offline mode: only local data
+        const localQuotes = await db.quotations.toArray();
+        setOffers(localQuotes);
+      }
+    } catch (err) {
+      console.error("Load error:", err);
+      // Fallback to local data on error
+      const localQuotes = await db.quotations.toArray();
+      setOffers(localQuotes);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStatusChange = (id: string, status: string) => {
@@ -234,7 +260,16 @@ export default function TrackingPage() {
                   transition={{ delay: i * 0.05 }}
                   className="table-row"
                 >
-                  <td className="font-semibold">{offer.clientName}</td>
+                  <td className="font-semibold">
+                    <div className="flex items-center gap-2">
+                      {offer.clientName}
+                      {offer.isSynced === false && (
+                        <span className="sync-badge" title="En attente de synchronisation">
+                          <Clock size={10} /> Hors-Ligne
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <div className="route-cell">
                       <span>{offer.origin}</span>
@@ -552,6 +587,25 @@ export default function TrackingPage() {
           color: var(--primary);
           font-weight: 600;
         }
+
+        .sync-badge {
+          background: rgba(245, 158, 11, 0.15);
+          color: #f59e0b;
+          font-size: 9px;
+          padding: 2px 8px;
+          border-radius: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          margin-top: 2px;
+        }
+
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .gap-2 { gap: 8px; }
 
         .tab-control {
           margin-bottom: 24px;

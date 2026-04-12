@@ -1,0 +1,25 @@
+{
+  "name": "CotaLog - Cotations Logistiques",
+  "short_name": "CotaLog",
+  "description": "Plateforme de gestion et suivi de cotations logistiques premium.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "orientation": "portrait",
+  "scope": "/"
+}
