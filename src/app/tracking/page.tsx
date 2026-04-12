@@ -59,9 +59,13 @@ export default function TrackingPage() {
         
         // Update local cache with remote data
         for (const q of quotes) {
+          const remoteQuote = q as any;
           await db.quotations.put({
-            ...q,
-            remoteId: q.id,
+            ...remoteQuote,
+            mode: remoteQuote.mode || "sea",
+            commodity: remoteQuote.commodity || "",
+            direction: remoteQuote.direction || "import",
+            remoteId: remoteQuote.id,
             isSynced: true
           });
         }
