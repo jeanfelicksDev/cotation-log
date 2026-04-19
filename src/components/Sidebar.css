@@ -1,0 +1,53 @@
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background: #0f172a !important; /* Deep Dark Navy */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  color: white !important;
+}
+
+.logo-text {
+  color: white !important;
+}
+
+.nav-item {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.nav-item:hover, .nav-item.active {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.divider {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.user-profile {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.name {
+  color: white !important;
+}
+
+.role {
+  color: #94a3b8 !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 50px rgba(0,0,0,0.5);
+  }
+}
