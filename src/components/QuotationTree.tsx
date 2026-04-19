@@ -209,11 +209,8 @@ export default function QuotationTree({ data, onSelect, onView, selectedId }: Qu
         .quotation-tree-container {
           width: 100%;
           height: 100%;
-          background: rgba(255, 255, 255, 0.02);
-          border-radius: 20px;
           display: flex;
           flex-direction: column;
-          border: 1px solid var(--border-surface);
           overflow: hidden;
         }
 

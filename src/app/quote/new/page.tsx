@@ -1449,7 +1449,7 @@ function QuoteForm() {
           min-width: 250px;
           padding: 8px 12px;
           border-radius: 12px;
-          background: #000000;
+          background: var(--bg-dark);
           border: 1px solid var(--border-surface);
           color: #ffffff;
           font-size: 14px;
@@ -1459,7 +1459,7 @@ function QuoteForm() {
         }
 
         .status-summary-select option {
-          background: #000000;
+          background: var(--bg-dark);
           color: #ffffff;
         }
 
@@ -1513,7 +1513,7 @@ function QuoteForm() {
           width: 100%;
           padding: 8px 12px;
           border-radius: 12px;
-          background: #000000;
+          background: var(--bg-dark);
           border: 1px solid var(--border-surface);
           color: #ffffff;
           font-size: 14px;

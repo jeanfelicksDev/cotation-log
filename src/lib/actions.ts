@@ -211,6 +211,9 @@ export async function saveQuotation(data: any) {
   try {
     const { 
       clientName, direction, status, origin, destination, commodity,
+      mode, frequency, transitTime, via, carrier,
+      nbColis, grossWeight, volume, commodityValue, temperature, isDangerous,
+      incoterm,
       totalBase, totalFinal, margin, items, containers 
     } = data;
 
@@ -230,6 +233,18 @@ export async function saveQuotation(data: any) {
         origin,
         destination,
         commodity,
+        mode,
+        frequency,
+        transitTime,
+        via,
+        carrier,
+        nbColis,
+        grossWeight,
+        volume,
+        commodityValue,
+        temperature,
+        isDangerous,
+        incoterm,
         totalBase,
         totalFinal,
         margin,
@@ -296,6 +311,9 @@ export async function updateQuotation(id: string, data: any) {
   try {
     const { 
       clientName, direction, status, origin, destination, commodity,
+      mode, frequency, transitTime, via, carrier,
+      nbColis, grossWeight, volume, commodityValue, temperature, isDangerous,
+      incoterm,
       totalBase, totalFinal, margin, items, containers 
     } = data;
 
@@ -315,6 +333,18 @@ export async function updateQuotation(id: string, data: any) {
         origin,
         destination,
         commodity,
+        mode,
+        frequency,
+        transitTime,
+        via,
+        carrier,
+        nbColis,
+        grossWeight,
+        volume,
+        commodityValue,
+        temperature,
+        isDangerous,
+        incoterm,
         totalBase,
         totalFinal,
         margin,

@@ -394,7 +394,7 @@ export default function TariffsPage() {
           box-sizing: border-box;
         }
 
-        .search-input:focus { outline: none; border-color: rgba(255,255,255,0.2); }
+        .search-input:focus { outline: none; border: var(--border-surface); }
         .search-input::placeholder { color: #4b5563; }
 
         .add-btn {
@@ -439,7 +439,7 @@ export default function TariffsPage() {
           transition: border-color 0.2s;
         }
 
-        .card:hover { border-color: rgba(255,255,255,0.15); }
+        .card:hover { border: var(--border-surface); }
         .card-expired { opacity: 0.6; }
 
         .card-main { flex: 1; min-width: 0; }
@@ -465,7 +465,7 @@ export default function TariffsPage() {
           transition: all 0.2s;
         }
 
-        .icon-btn:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+        .icon-btn:hover { color: #fff; border: var(--border-surface); }
         .icon-btn-del:hover { color: #ef4444; background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); }
 
         .carrier-badge {
@@ -530,7 +530,7 @@ function TariffModal({
     <div style={overlay}>
       <div style={box}>
         <div style={{ padding: "22px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{title}</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)" }}>{title}</h2>
           <button onClick={onClose} style={{ color: "#6b7280", cursor: "pointer", display: "flex", padding: 4 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
@@ -612,7 +612,7 @@ function TariffModal({
 
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)",
-  padding: "10px 13px", borderRadius: 10, color: "#fff", fontSize: 14, boxSizing: "border-box",
+  padding: "10px 13px", borderRadius: 10, color: "var(--text-main)", fontSize: 14, boxSizing: "border-box",
 };
 
 function MInput({ value, onChange, placeholder, type = "text", required, list, step }: any) {
@@ -645,7 +645,7 @@ function MFooter({ onClose, isEdit, color, glow }: any) {
         Annuler
       </button>
       <button type="submit"
-        style={{ flex: 2, padding: "12px", borderRadius: 11, fontWeight: 700, background: color, color: "#fff", boxShadow: `0 4px 15px ${glow}`, cursor: "pointer" }}>
+        style={{ flex: 2, padding: "12px", borderRadius: 11, fontWeight: 700, background: color, color: "var(--text-main)", boxShadow: `0 4px 15px ${glow}`, cursor: "pointer" }}>
         {isEdit ? "Enregistrer" : "Créer"}
       </button>
     </div>

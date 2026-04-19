@@ -260,7 +260,7 @@ export default function CompanySetupPage() {
           width: 120px;
           height: 120px;
           border-radius: 16px;
-          background: #000;
+          background: var(--bg-dark);
           border: 1px solid var(--border-surface);
           flex-shrink: 0;
           overflow: hidden;

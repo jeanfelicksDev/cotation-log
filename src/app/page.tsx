@@ -474,6 +474,79 @@ export default function Dashboard() {
         }
         .chart-empty p { font-weight: 600; }
         .chart-empty span { font-size: 13px; }
+
+        /* ─── Responsive Mobile ─── */
+        @media (max-width: 768px) {
+          .dashboard-container {
+            max-width: 100%;
+          }
+
+          .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+          }
+
+          .page-title {
+            font-size: 22px;
+          }
+
+          .page-subtitle {
+            font-size: 14px;
+          }
+
+          .btn-primary {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+          }
+
+          .stat-card {
+            padding: 16px;
+            border-radius: 18px;
+          }
+
+          .stat-value {
+            font-size: 22px;
+          }
+
+          .stat-label {
+            font-size: 12px;
+          }
+
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+            margin-top: 24px;
+            gap: 16px;
+          }
+
+          .content-card {
+            padding: 16px;
+            border-radius: 18px;
+          }
+
+          .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          table {
+            min-width: 580px;
+          }
+        }
+
+        @media (max-width: 400px) {
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+          }
+        }
       `}</style>
     </div>
   );

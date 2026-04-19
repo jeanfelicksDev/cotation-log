@@ -298,7 +298,7 @@ export default function TrackingPage() {
                       style={{ 
                         backgroundColor: getStatusColor(offer.status),
                         borderColor: getStatusColor(offer.status),
-                        color: 'white',
+                        color: "var(--text-main)",
                         boxShadow: `0 0 10px ${getStatusColor(offer.status)}44`
                       }}
                     >
@@ -379,12 +379,18 @@ export default function TrackingPage() {
 
         .tracking-sidebar {
           width: 300px;
-          position: sticky;
-          top: 24px;
-          height: calc(100vh - 48px);
+          position: fixed;
+          right: 0;
+          top: 0;
+          height: 100vh;
           display: flex;
           flex-direction: column;
           gap: 16px;
+          background: var(--bg-surface);
+          backdrop-filter: var(--glass-blur);
+          border-left: 1px solid var(--border-surface);
+          padding: 24px 16px;
+          z-index: 100;
         }
 
         .btn-reset-tree {

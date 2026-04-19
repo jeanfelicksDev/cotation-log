@@ -1,24 +1,24 @@
 :root {
-  /* Color Palette - Premium Logistics Theme */
-  --bg-dark: #0a0c10;
-  --bg-surface: rgba(20, 24, 33, 0.7);
-  --bg-card: rgba(30, 36, 48, 0.5);
+  /* Color Palette - Premium Milky White Theme */
+  --bg-dark: #faf8f5;         /* Milky White Background */
+  --bg-surface: rgba(255, 255, 255, 0.7);
+  --bg-card: rgba(255, 255, 255, 0.9);
   
-  --primary: #10b981; /* Emerald */
-  --primary-glow: rgba(16, 185, 129, 0.3);
+  --primary: #10b981;         /* Emerald Accent */
+  --primary-glow: rgba(16, 185, 129, 0.15);
   
-  --accent: #f59e0b; /* Amber/Gold */
-  --accent-glow: rgba(245, 158, 11, 0.3);
+  --accent: #d97706;          /* Deep Amber for better contrast on light */
+  --accent-glow: rgba(217, 119, 6, 0.1);
   
-  --text-main: #f3f4f6;
-  --text-dim: #9ca3af;
-  --text-muted: #6b7280;
+  --text-main: #1a1c21;       /* Deep Slate for high contrast */
+  --text-dim: #4a5568;        /* Muted Blue-Grey */
+  --text-muted: #718096;      /* Lighter Slate */
   
-  --border-surface: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(255, 255, 255, 0.15);
+  --border-surface: rgba(0, 0, 0, 0.06);
+  --border-highlight: rgba(0, 0, 0, 0.12);
   
-  --glass-blur: blur(12px);
-  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  --glass-blur: blur(16px);
+  --shadow-premium: 0 12px 40px -12px rgba(0, 0, 0, 0.08); /* Soft shadows for light mode */
   
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -82,8 +82,8 @@ label {
 }
 
 select, option {
-  background-color: #000000;
-  color: #ffffff;
+  background: var(--bg-dark);
+  color: var(--text-main);
 }
 
 /* Scrollbar Styling */
@@ -113,13 +113,42 @@ select, option {
 .main-content {
   flex: 1;
   margin-left: 280px;
+  margin-right: 300px; /* Space for the right explorer */
   padding: 40px;
   min-height: 100vh;
-  background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.02) 0%, transparent 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 100%);
+}
+
+@media (max-width: 1280px) {
+  .main-content {
+    margin-right: 0;
+  }
 }
 
 @media (max-width: 1024px) {
   .main-content {
-    margin-left: 80px;
+    margin-left: 280px;
+    margin-right: 0;
+    padding: 28px;
   }
 }
+
+/* Tablet */
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 280px;
+    margin-right: 0;
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 16px;
+    padding-top: 76px; /* Space for mobile header */
+  }
+}
+

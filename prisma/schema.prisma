@@ -21,6 +21,21 @@ model Quotation {
   origin      String?
   destination String?
   commodity   String?
+  mode        String?    // "sea", "air", "road"
+  frequency   String?    // ex: "Weekly"
+  transitTime String?    // ex: "15 days"
+  via         String?
+  carrier     String?    // ex: "Maersk"
+  
+  // Goods details
+  nbColis     Int?
+  grossWeight Float?
+  volume      Float?
+  commodityValue Float?
+  temperature String?
+  isDangerous Boolean?   @default(false)
+  
+  incoterm    String?
   
   totalBase   Float
   totalFinal  Float
@@ -107,4 +122,63 @@ model CompanyProfile {
   email         String?
   logo          String?  @db.Text
   updatedAt     DateTime @updatedAt
+}
+
+// ─── Licence & Accès ───────────────────────────────────────────────
+
+model License {
+  id           String    @id @default(cuid())
+  key          String    @unique
+  companyName  String
+  contactEmail String
+  maxUsers     Int       @default(10)
+  expiresAt    DateTime?
+  activatedAt  DateTime?
+  isActive     Boolean   @default(false)
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  organization Organization?
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  licenseId String  @unique
+  license   License @relation(fields: [licenseId], references: [id])
+
+  users       User[]
+  inviteTokens InviteToken[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(EMPLOYEE)
+  createdAt DateTime @default(now())
+
+  orgId String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model InviteToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  orgId String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  SUPER_ADMIN // Vous (générateur de licences)
+  ADMIN       // Admin de l'entreprise cliente
+  EMPLOYEE    // Collaborateur
 }
